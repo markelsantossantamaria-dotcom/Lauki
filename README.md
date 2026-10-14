@@ -48,7 +48,6 @@ La documentación detallada del sistema se encuentra estructurada en el director
 
 - **Documento de Requisitos de Software (SRS):**
   - **Funcionales:** Lo que la app debe hacer (ej. *"El usuario debe poder registrarse con Google"*, *"El sistema genera un PDF de facturación"*).
-  - **No funcionales:** Rendimiento, seguridad y escalabilidad (ej. *"Tiempos de carga menores a 2 segundos"*, *"Soporte para 10,000 usuarios concurrentes"*).
 - **Arquitectura de Software y Diagramas:**
   - **Diagrama de Arquitectura:** Estructura Frontend, Backend, Base de Datos y APIs de terceros.
   - **Modelo de Base de Datos (DER):** Esquema de tablas/colecciones y relaciones entre datos.
