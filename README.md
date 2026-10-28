@@ -1,64 +1,58 @@
-# Reto 03: Mapeando el Caos (LAUKI)
+# 🗂️ Lauki — Mapeando el Caos
 
-Herramienta web colaborativa para la gestión ágil de proyectos educativos bajo el modelo **ETHAZI** en **Zabalburu Ikastetxea** (Ciclo Formativo de Grado Superior en Desarrollo de Aplicaciones Web - 2º DAW).
+![Java 21](https://img.shields.io/badge/Java-21_LTS-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring Boot 3](https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
+![Spring Data JPA](https://img.shields.io/badge/Hibernate-JPA-59666C?style=for-the-badge&logo=hibernate&logoColor=white)
+![Thymeleaf](https://img.shields.io/badge/Thymeleaf-SSR-005F0F?style=for-the-badge&logo=thymeleaf&logoColor=white)
+![Bootstrap 5](https://img.shields.io/badge/Bootstrap-5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
----
-
-## 1. Visión del Producto
-En el modelo pedagógico ETHAZI, el alumnado trabaja en retos multidisciplinares donde la autoorganización del equipo, la toma compartida de decisiones y el reparto equitativo de tareas son determinantes. Con frecuencia surgen problemáticas como:
-- Dificultades para planificar las tareas y falta de claridad en la titularidad o responsabilidades individuales.
-- Dificultad para conocer el estado y progreso real del trabajo frente al planificado.
-- Ausencia de anticipación y visibilidad temprana de bloqueos o impedimentos técnicos.
-
-**LAUKI** resuelve esta problemática mediante un prototipo web ligero, usable e interactivo que permite descomponer retos en fases estructuradas y tareas operativas dentro de un tablero Kanban con trazabilidad estricta y control de tiempos de ejecución real.
+> **Centro:** Zabalburu Ikastetxea — 2º DAW (Desarrollo de Aplicaciones Web)  
+> **Metodología:** Aprendizaje Colaborativo Basado en Retos (**ETHAZI**) · **Validación Interciclos:** CFGS ASIR
 
 ---
 
-## 2. Puntos Clave de la Arquitectura
-- **Filosofía Zero-Budget:** Arquitectura orientada a coste cero de infraestructura, eliminando dependencias de servicios cloud de pago o plataformas SaaS propietarias.
-- **Monolito Modular:** Aplicación autocontenida desarrollada con Java, Spring Boot y Spring MVC, estructurada internamente por dominios para minimizar la complejidad operativa sin comprometer la mantenibilidad.
-- **Renderizado del Lado del Servidor (SSR):** Vistas generadas dinámicamente en servidor mediante Thymeleaf y maquetadas con Bootstrap y CSS3.
-- **Interactividad Ligera (Vanilla JS):** Tablero visual gestionado mediante JavaScript puro (sin frameworks pesados de frontend como React o Angular), permitiendo el movimiento de tarjetas y la interacción dinámica con el backend.
-- **Autogestión de Roles Internos:** Los propios alumnos se autoasignan los roles organizativos dentro de su equipo (Gestor, Analista, Desarrollador, Colaborador) mediante la entidad intermedia `Miembro_Grupo`.
-- **Auditoría y Trazabilidad Unificada (`LOG_TAREA`):** Registro inmutable en una única tabla de auditoría (`LOG_TAREA`) que consolida transiciones de estado, justificación obligatoria de bloqueos y comentarios en transacciones atómicas.
-- **Borrado Lógico Centralizado:** Implementación a nivel de persistencia en JPA/Hibernate (`@SQLDelete` y `@SQLRestriction` sobre `fecha_eliminacion`) que mantiene limpios los controladores y servicios sin borrar físicamente registros ni alterar auditorías.
-- **Auditoría Temporal Inmutable:** Control estricto de marcas de tiempo en el servidor (`fecha_creacion_real` inmutable al crearse; `fecha_inicializacion` persistente al pasar por primera vez a *En Progreso*; `fecha_finalizacion_real` calculada al entrar a *Completada* y reseteable en caso de reapertura).
+## 1. Visión del Producto (Product Vision)
+
+En el modelo pedagógico **ETHAZI**, los equipos de alumnado deben autoorganizarse para resolver retos técnicos complejos. Sin embargo, es frecuente que surjan dificultades para repartir tareas con titularidad clara, visualizar el estado real del trabajo y detectar bloqueos a tiempo.
+
+**Lauki** es una herramienta web Kanban diseñada para gestionar retos académicos:
+- **Organización por Fases y Responsable Individual:** Cada reto se divide en equipos/tableros (`GRUPO`), etapas (`FASE`) y unidades de trabajo (`TAREA`) con un único responsable titular.
+- **Gestión Visual de Bloqueos y Trazabilidad:** Las tareas avanzan por 5 columnas interactivas, exigiendo justificar cualquier bloqueo en un registro de auditoría inmutable (`LOG_TAREA`).
+- **Continuidad Multi-Curso e Historial:** Permite dar de alta futuros cursos escolares y conserva los tableros de retos finalizados en **modo solo lectura** aunque los alumnos cambien de grupo en el siguiente reto.
 
 ---
 
-## 3. Stack Tecnológico Obligatorio
+## 2. Documento de Requisitos de Software (SRS - Software Requirements Specification)
 
-| Componente | Tecnología | Propósito |
+### Requisitos de Aprendizaje y Funcionales
+
+| Código | Requisito | Implementación en Lauki |
+| :---: | :--- | :--- |
+| **R1** | **Organización del trabajo** | División del reto en grupos/tableros (`GRUPO`), fases (`FASE`) y tareas (`TAREA`) con responsable individual (`id_asignado`). |
+| **R2** | **Seguimiento del avance** | Tablero Kanban de 5 estados (`PENDIENTE`, `EN_PROGRESO`, `BLOQUEADA`, `EN_SUPERVISION`, `COMPLETADA`) con filtro rápido por fase. |
+| **R3** | **Interacción visual** | Drag & Drop con JavaScript Vanilla (`kanban.js`), modal obligatorio de motivo de bloqueo y filtrado dinámico en cliente. |
+| **R4** | **Información persistente** | Base de datos relacional (**8 tablas**) con Spring Data JPA (Hibernate 6), claves `Integer` simples y estados de dominio (`activo`, `EstadoReto`). |
+| **R5** | **Acceso controlado** | Login unificado (`/login`) con BCrypt para `ADMINISTRADOR` y `ESTUDIANTE`, redirección por rol y aislamiento por equipo. |
+| **R6** | **Calidad y mantenibilidad** | Arquitectura MVC + DTO `record`s, tests unitarios con JUnit 5 + Mockito, Git semántico y contenedores Docker para testeo con ASIR. |
+
+### Restricciones de Negocio
+- **Administradores Precargados (`DataInitializer`):** Garantiza la cuenta inicial de `ADMINISTRADOR` para que el equipo docente inicie sesión en `/login` y cargue en la base de datos los cursos y estudiantes.
+- **Roles ETHAZI Informativos:** El rol interno del alumno (`GESTOR`, `ANALISTA`, `DESARROLLADOR`, `COLABORADOR`) es un identificador visual organizativo sin restringir permisos en el tablero del equipo.
+- **Responsable Obligatorio para Avanzar:** Ninguna tarea puede salir de `PENDIENTE` si tiene `id_asignado == null`.
+- **Bloqueo Justificado Atómico:** Pasar una tarea a `BLOQUEADA` requiere registrar obligatoriamente el motivo en `LOG_TAREA`.
+
+---
+
+## 📂 Documentación Técnica del Proyecto (`documents/`)
+
+Haz clic en cualquiera de las secciones inferiores para abrir su documento técnico completo:
+
+| Sección | Documento en `documents/` | Contenido Principal |
 | :--- | :--- | :--- |
-| **Backend** | Spring Boot / Spring MVC (Java) | Controlador principal, inyección de dependencias, lógica de negocio y APIs |
-| **Persistencia** | Spring Data JPA / Hibernate | Mapeo objeto-relacional, auditoría y borrado lógico centralizado |
-| **Motor de Plantillas** | Thymeleaf | Generación de vistas HTML dinámicas del lado del servidor |
-| **Diseño y Maquetación** | HTML5, CSS3 + Bootstrap 5 | Interfaz responsiva, accesible y componentes de validación visual |
-| **Lógica Frontend** | JavaScript Vanilla | Tablero Kanban interactivo, Drag and Drop y consumo asíncrono |
-| **Base de Datos** | Relacional (PostgreSQL / MySQL) | Almacenamiento íntegro, integridad referencial y transacciones atómicas |
-| **Entorno y Pruebas ASIR** | Docker & Docker Compose | Aislamiento y reproducibilidad para testeo por el ciclo ASIR |
-| **Testing Automatizado** | JUnit & Spring Boot Test | Pruebas unitarias de reglas de dominio, criterios de aceptación y transacciones |
-| **Control de Versiones** | Git | Trazabilidad del desarrollo, ramas y colaboración en equipo |
-
----
-
-## 4. Índice de Documentación Técnica
-
-La documentación detallada del sistema se encuentra estructurada en el directorio `documentation/`:
-
-- **Documento de Requisitos de Software (SRS):**
-  - **Funcionales:** Lo que la app debe hacer (ej. *"El usuario debe poder registrarse con Google"*, *"El sistema genera un PDF de facturación"*).
-- **Arquitectura de Software y Diagramas:**
-  - **Diagrama de Arquitectura:** Estructura Frontend, Backend, Base de Datos y APIs de terceros.
-  - **Modelo de Base de Datos (DER):** Esquema de tablas/colecciones y relaciones entre datos.
-  - **Diagramas de Flujo (User Flow):** El camino que recorre el usuario para completar cada acción clave.
-- **Diseño e Interfaz (UI/UX):**
-  - **Wireframes y Prototipos:** Bocetos visuales (Figma, Sketch, Adobe XD) de las pantallas principales.
-  - **Guía de Estilos:** Paleta de colores, tipografías y componentes de interfaz.
-- **Documentación de APIs:** Especificación de endpoints (REST o GraphQL) con parámetros de entrada/salida (usando OpenAPI/Swagger).
-- **Manual de Despliegue y DevOps:** Pasos para levantar el entorno de desarrollo, servidor de producción (AWS, Vercel, Docker) y configuración de CI/CD.
-
----
-
-## 5. Validación y Entorno Educativo
-El prototipo está diseñado para ejecutarse y desplegarse en un entorno local. Como parte fundamental de la metodología ETHAZI y la cooperación interciclos en **Zabalburu Ikastetxea**, la aplicación será sometida a pruebas funcionales, de usabilidad y de rendimiento por parte del alumnado del CFGS de **Administración de Sistemas Informáticos en Red (ASIR)**, validando su comportamiento en un entorno real de trabajo colaborativo.
+| **3. Arquitectura de Software**<br>*(Software Architecture)* | **[`Arquitectura_de_Software.md`](documents/Arquitectura_de_Software.md)**<br>**[`Modelo_de_Base_de_Datos.md`](documents/Modelo_de_Base_de_Datos.md)** | Diagrama general de arquitectura (Frontend, Backend, BDD), Diagrama Entidad-Relación (DER de 8 tablas), User Flows y diccionario de datos en 3FN. |
+| **4. Especificación Funcional**<br>*(Functional Specification)* | **[`Casos_de_Uso.md`](documents/Casos_de_Uso.md)**<br>**[`Historias_de_Usuario.md`](documents/Historias_de_Usuario.md)** | Los **8 Casos de Uso (`CU-01` a `CU-08`)** con flujos alternativos y el **Product Backlog de 13 Historias de Usuario (`US-01` a `US-13`)** con criterios BDD. |
+| **5. Documentación de APIs**<br>*(API Documentation)* | **[`Documentacion_API.md`](documents/Documentacion_API.md)** | Especificación de los endpoints REST internos (`/api/tareas/**`), payloads de entrada (`Request` records), salidas JSON (`TareaDTO`) y códigos HTTP. |
+| **6. Decisiones Arquitectónicas**<br>*(ADRs)* | **[`Decisiones_Arquitectonicas_ADR.md`](documents/Decisiones_Arquitectonicas_ADR.md)** | Justificación formal de los **5 ADRs (`ADR-01` a `ADR-05`)** y guía de prevención de los **8 fallos críticos** durante el desarrollo. |
+| **7. Guía de Contribución y Git**<br>*(Contribution & Git Workflow)* | **[`Guia_Contribucion_y_Git.md`](documents/Guia_Contribucion_y_Git.md)** | Flujo de ramas **GitFlow Ligero** (`main`, `develop`, `feat/US-XX`), estándar **Conventional Commits** y comandos diarios para el equipo. |
+| **8. Hoja de Ruta**<br>*(Roadmap)* | **[`Roadmap.md`](documents/Roadmap.md)** | Planificación en **5 Fases** con reparto equilibrado (25% por integrante), dependencias críticas e hitos de entrega Docker al alumnado de **ASIR**. |
