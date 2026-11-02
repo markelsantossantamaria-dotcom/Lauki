@@ -1,0 +1,112 @@
+# =============================================================================
+# LAUKI - RETO 03: .gitignore Oficial para Eclipse / Spring Tool Suite (STS)
+# Configurado para trabajo colaborativo sin conflictos de build path (4 personas)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Maven & Spring Boot Artifacts
+# -----------------------------------------------------------------------------
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
+
+# OBLIGATORIO: Mantener el wrapper para que ./mvnw funcione tras git clone
+!.mvn/wrapper/maven-wrapper.jar
+
+# -----------------------------------------------------------------------------
+# 2. Eclipse IDE & Spring Tool Suite (STS) - Core Configuration
+# -----------------------------------------------------------------------------
+# Metadatos locales de proyecto (se regeneran con File -> Import -> Existing Maven Projects)
+.project
+.classpath
+.settings/
+# Excepción: Conservar la configuración de codificación UTF-8 para autoconfiguración de Eclipse
+!.settings/org.eclipse.core.resources.prefs
+
+# Spring Tools 4 y configuración de beans
+.springBeans
+.sts4-cache/
+
+# Procesamiento de anotaciones y compilación interna de Eclipse
+.apt_generated/
+.apt_generated_tests/
+.factorypath
+bin/
+
+# Configuraciones de ejecución local de Eclipse (Run As -> Spring Boot App)
+*.launch
+
+# Metadatos si el repositorio se clona dentro del workspace de Eclipse
+.metadata/
+RemoteSystemsTempFiles/
+
+# -----------------------------------------------------------------------------
+# 3. Otros Editores (por si algún integrante alterna o colabora en equipo)
+# -----------------------------------------------------------------------------
+### Visual Studio Code ###
+.vscode/
+*.code-workspace
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+### NetBeans ###
+/nbproject/private/
+/build/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# -----------------------------------------------------------------------------
+# 4. Bases de Datos, Docker y Persistencia Local
+# -----------------------------------------------------------------------------
+mysql_data/
+db_data/
+docker_data/
+*.sql.gz
+*.dump
+docker-compose.override.yml
+
+# -----------------------------------------------------------------------------
+# 5. Logs, Ficheros Temporales y Seguridad
+# -----------------------------------------------------------------------------
+*.log
+logs/
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+.env
+.env.local
+.env.*.local
+
+# -----------------------------------------------------------------------------
+# 6. Sistemas Operativos (Windows, macOS, Linux)
+# -----------------------------------------------------------------------------
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+.directory

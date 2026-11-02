@@ -1,0 +1,44 @@
+# =============================================================================
+# LAUKI - RETO 03: Normalización de Fin de Línea y Binarios (Linux <-> Windows)
+# =============================================================================
+
+# Regla global por defecto: Detección automática de texto y normalización a LF
+* text=auto eol=lf
+
+# -----------------------------------------------------------------------------
+# Código Fuente y Recursos Web (Siempre LF en el repositorio)
+# -----------------------------------------------------------------------------
+*.java        text eol=lf diff=java
+*.html        text eol=lf
+*.css         text eol=lf
+*.js          text eol=lf
+*.json        text eol=lf
+*.xml         text eol=lf
+*.properties  text eol=lf
+*.sql         text eol=lf
+*.yml         text eol=lf
+*.yaml        text eol=lf
+*.md          text eol=lf
+.gitignore    text eol=lf
+.gitattributes text eol=lf
+.editorconfig text eol=lf
+
+# -----------------------------------------------------------------------------
+# Scripts de Construcción (Crítico para que mvnw funcione en Linux y Windows)
+# -----------------------------------------------------------------------------
+# Script Bash de Linux: NUNCA debe contener retornos de carro \r
+mvnw          text eol=lf
+
+# Script Batch de Windows: Debe mantener finales CRLF
+mvnw.cmd      text eol=crlf
+
+# -----------------------------------------------------------------------------
+# Archivos Binarios (No tocar bytes)
+# -----------------------------------------------------------------------------
+*.jar         binary
+*.class       binary
+*.png         binary
+*.jpg         binary
+*.jpeg        binary
+*.ico         binary
+*.pdf         binary
