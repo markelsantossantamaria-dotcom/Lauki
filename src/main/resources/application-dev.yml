@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/lauki_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USER:lauki_admin}
+    password: ${DB_PASSWORD:lauki_secure_password_2026}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+
+logging:
+  level:
+    org.lauki: INFO
+    org.hibernate.SQL: ERROR
