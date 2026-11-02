@@ -1,0 +1,30 @@
+services:
+  mysql-lauki:
+    image: mysql:8.0.36
+    container_name: lauki_mysql_container
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: lauki_db
+      MYSQL_USER: lauki_admin
+      MYSQL_PASSWORD: lauki_secure_password_2026
+      MYSQL_ROOT_PASSWORD: root_master_password_lauki
+    volumes:
+      - lauki_mysql_data:/var/lib/mysql
+    networks:
+      - lauki_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_master_password_lauki"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+volumes:
+  lauki_mysql_data:
+    name: lauki_mysql_data
+
+networks:
+  lauki_network:
+    name: lauki_network
