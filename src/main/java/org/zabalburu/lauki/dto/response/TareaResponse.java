@@ -1,5 +1,5 @@
-package org.zabalburu.lauki.dto;
+package org.zabalburu.lauki.dto.response;
 
-public class TareaDTO {
+public record TareaResponse() {
 
 }
