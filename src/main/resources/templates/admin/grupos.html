@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<!-- =========================================================================
+     ARCHIVO: src/main/resources/templates/admin/grupos.html
+     ROL: ADMINISTRADOR
+     VISTA: Gestión de Grupos (Tarjetas de Equipo, Asignación de Alumnos y Modal)
+     CONTROLADOR: AdminController.java -> @GetMapping("/admin/grupos") devuelve "admin/grupos"
+     ========================================================================= -->
+<html lang="es" 
+      xmlns:th="http://www.thymeleaf.org" 
+      data-layout-decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Grupos · Administrador</title>
+
+    <!-- =========================================================================
+         SOLO PARA VISTA PREVIA EN VS CODE (Live Server):
+         th:remove="all" hace que Spring Boot borre estas líneas al unir con layout.html.
+         ========================================================================= -->
+    <script th:remove="all">
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('lauki-theme') || 'light');
+        document.documentElement.setAttribute('data-accent', localStorage.getItem('lauki-accent') || 'magenta');
+        document.documentElement.setAttribute('data-sidebar', localStorage.getItem('lauki-sidebar') || 'expanded');
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet" th:remove="all">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" th:remove="all">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" th:remove="all">
+    <link rel="stylesheet" href="../../static/css/styles.css" th:remove="all">
+</head>
+<body>
+
+    <!-- Contenedor de vista previa (th:remove="tag" lo elimina en Spring Boot dejando solo el fragmento) -->
+    <div class="admin" th:remove="tag">
+
+        <!-- TOPBAR MÓVIL (Solo vista previa VS Code) -->
+        <header class="topbar" th:remove="all">
+            <button type="button" class="btn p-0 text-reset" id="mobile-menu-toggle" aria-label="Abrir menú">
+                <i class="bi bi-list fs-3"></i>
+            </button>
+            <h2 class="m-0 font-display fs-5 fw-bold">
+                Lauki<span style="color: var(--color-accent); font-size: 0.6em; vertical-align: 0.1em;">▮</span>
+            </h2>
+            <div class="user-menu-btn p-0" style="width: 32px; height: 32px; justify-content: center;">
+                <span style="font-size: 12px; font-weight:bold;">AL</span>
+            </div>
+        </header>
+
+        <div class="sidebar-backdrop d-none" id="sidebar-backdrop" th:remove="all"></div>
+
+        <!-- SIDEBAR (Solo vista previa VS Code - Spring Boot usa la de layout.html) -->
+        <aside class="sidebar d-flex flex-column" th:remove="all">
+            <div class="sidebar__header p-4 d-flex align-items-center gap-3">
+                <button type="button" class="btn p-0 text-reset sidebar__toggle" data-sidebar-toggle aria-label="Colapsar menú">
+                    <i class="bi bi-list fs-3"></i>
+                </button>
+                <h2 class="sidebar__brand m-0 font-display fw-bold" style="font-size: 28px;">
+                    Lauki<span style="color: var(--color-accent); font-size: 0.6em; vertical-align: 0.1em;">▮</span>
+                </h2>
+            </div>
+
+            <nav class="flex-grow-1 px-3 mt-2" aria-label="Menú principal">
+                <div id="menu-admin">
+                    <a href="./panel.html" title="Inicio" class="sidebar__link mb-1">
+                        <i class="bi bi-house"></i> <span>Inicio</span>
+                    </a>
+                    <a href="./cursos.html" title="Cursos" class="sidebar__link mb-1">
+                        <i class="bi bi-book"></i> <span>Cursos</span>
+                    </a>
+                    <a href="./usuarios.html" title="Usuarios" class="sidebar__link mb-1">
+                        <i class="bi bi-people"></i> <span>Usuarios</span>
+                    </a>
+                    <a href="./grupos.html" title="Grupos" class="sidebar__link sidebar__link--active mb-1">
+                        <i class="bi bi-grid"></i> <span>Grupos</span>
+                    </a>
+                    <a href="./retos.html" title="Retos" class="sidebar__link mb-1">
+                        <i class="bi bi-flag"></i> <span>Retos</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Controles de Acento y Tema idénticos a login.html y layout.html -->
+            <div class="sidebar__footer p-4 border-top d-flex justify-content-between align-items-center" style="border-color: var(--color-border-subtle) !important;">
+                <div class="accent-group" role="group" aria-label="Selector de color de acento">
+                    <button type="button" class="accent-swatch accent-swatch--magenta active" data-accent-option="magenta" aria-label="Acento Magenta">
+                        <i class="bi bi-check2"></i>
+                    </button>
+                    <button type="button" class="accent-swatch accent-swatch--cyan" data-accent-option="cyan" aria-label="Acento Cian">
+                        <i class="bi bi-check2"></i>
+                    </button>
+                </div>
+
+                <button type="button" class="theme-circle-btn shadow-sm" id="theme-toggle" aria-label="Cambiar tema">
+                    <i class="bi bi-moon"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="admin__main" th:remove="tag">
+
+            <!-- Menú de usuario (Solo vista previa VS Code) -->
+            <div class="d-none d-md-flex justify-content-end mb-3 dropdown" th:remove="all">
+                <button class="user-menu-btn" data-bs-toggle="dropdown">
+                    <div class="avatar">AL</div>
+                    <span style="font-size: 14px; font-weight: 500;">Administrador Lauki</span>
+                    <i class="bi bi-chevron-down" style="font-size: 12px; color: var(--color-text-secondary);"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow" style="background-color: var(--color-bg-surface); border-color: var(--color-border-subtle);">
+                    <li>
+                        <a class="dropdown-item text-danger" href="../login.html">
+                            <i class="bi bi-box-arrow-right me-2"></i> Cerrar sesión
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- =========================================================================
+                 BLOQUE REAL QUE SPRING BOOT INYECTA EN layout.html
+                 ========================================================================= -->
+            <div data-layout-fragment="content">
+                
+                <!-- Cabecera con título a la izquierda y botón + Nuevo Grupo a la derecha -->
+                <header class="page-header d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+                    <div>
+                        <p class="font-mono text-uppercase m-0" style="color: var(--color-text-secondary); font-size: 12px; letter-spacing: 0.05em;">
+                            Administración
+                        </p>
+                        <h1 class="font-display fw-bold mt-1 mb-0" style="font-size: 32px;">
+                            Gestión de Grupos
+                        </h1>
+                    </div>
+
+                    <button type="button" class="btn--primary" data-modal-open="modal-nuevo-grupo">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Nuevo Grupo</span>
+                    </button>
+                </header>
+
+                <!-- =========================================================================
+                     BACKEND (AdminController.java & Grupo.java): REJILLA DE GRUPOS
+                     - Iterar cada tarjeta con th:each="grupo : ${grupos}".
+                     - Nombre del grupo: th:text="${grupo.nombre}"
+                     - Curso asociado: th:text="${grupo.curso != null ? grupo.curso.nombre : 'Sin curso'}"
+                     - Contador de miembros: th:text="${#numbers.formatInteger(#lists.size(grupo.miembros), 2) + ' MIEMBROS'}"
+                     - Lista de miembros: iterar <li class="group-member" th:each="miembro : ${grupo.miembros}">
+                     - Formulario añadir alumno: th:action="@{/admin/grupos/{id}/miembros(id=${grupo.id})}"
+                     ========================================================================= -->
+                <section class="group-grid" aria-label="Listado de grupos">
+                    
+                    <!-- TARJETA 1 (Ejemplo visual - reemplazar por th:each="grupo : ${grupos}") -->
+                    <article class="group-card">
+                        <div class="group-card__header">
+                            <div>
+                                <h2 class="group-card__title">Equipo Alfa</h2>
+                                <p class="group-card__course">1º DAW</p>
+                            </div>
+                            <span class="group-card__count">02 Miembros</span>
+                        </div>
+
+                        <ul class="group-card__members">
+                            <li class="group-member">
+                                <span class="group-member__avatar">M</span>
+                                <span>Marta Ruiz</span>
+                            </li>
+                            <li class="group-member">
+                                <span class="group-member__avatar">P</span>
+                                <span>Pablo Gómez</span>
+                            </li>
+                        </ul>
+
+                        <form action="#" method="post" class="group-card__form">
+                            <div class="lauki-select flex-grow-1" data-custom-select>
+                                <!-- BACKEND: Poblar con alumnos disponibles th:each="alumno : ${alumnosDisponibles}" -->
+                                <select name="usuarioId" class="d-none" required>
+                                    <option value="" selected disabled>Añadir alumno...</option>
+                                    <option value="3">Lucía Torres</option>
+                                    <option value="4">Diego Marín</option>
+                                    <option value="5">Sara Núñez</option>
+                                </select>
+
+                                <button type="button" class="lauki-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                                    <span class="lauki-select__value is-placeholder">Añadir alumno...</span>
+                                    <i class="bi bi-chevron-down lauki-select__arrow"></i>
+                                </button>
+
+                                <ul class="lauki-select__menu d-none" role="listbox"></ul>
+                            </div>
+
+                            <button type="submit" class="btn--card-add">
+                                Añadir
+                            </button>
+                        </form>
+                    </article>
+
+                    <!-- TARJETA 2 (Ejemplo visual - eliminar al conectar th:each) -->
+                    <article class="group-card">
+                        <div class="group-card__header">
+                            <div>
+                                <h2 class="group-card__title">Equipo Beta</h2>
+                                <p class="group-card__course">2º DAW</p>
+                            </div>
+                            <span class="group-card__count">01 Miembros</span>
+                        </div>
+
+                        <ul class="group-card__members">
+                            <li class="group-member">
+                                <span class="group-member__avatar">L</span>
+                                <span>Lucía Torres</span>
+                            </li>
+                        </ul>
+
+                        <form action="#" method="post" class="group-card__form">
+                            <div class="lauki-select flex-grow-1" data-custom-select>
+                                <select name="usuarioId" class="d-none" required>
+                                    <option value="" selected disabled>Añadir alumno...</option>
+                                    <option value="1">Marta Ruiz</option>
+                                    <option value="2">Pablo Gómez</option>
+                                    <option value="4">Diego Marín</option>
+                                    <option value="5">Sara Núñez</option>
+                                </select>
+
+                                <button type="button" class="lauki-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                                    <span class="lauki-select__value is-placeholder">Añadir alumno...</span>
+                                    <i class="bi bi-chevron-down lauki-select__arrow"></i>
+                                </button>
+
+                                <ul class="lauki-select__menu d-none" role="listbox"></ul>
+                            </div>
+
+                            <button type="submit" class="btn--card-add">
+                                Añadir
+                            </button>
+                        </form>
+                    </article>
+
+                </section>
+
+                <!-- =========================================================================
+                     MODAL: NUEVO GRUPO
+                     BACKEND (AdminController.java & Grupo.java):
+                     - Añadir th:action="@{/admin/grupos}" (ajustar al @PostMapping correspondiente).
+                     - Atributos name="nombre" y name="cursoId".
+                     ========================================================================= -->
+                <div class="modal-overlay d-none" id="modal-nuevo-grupo" role="dialog" aria-modal="true" aria-labelledby="modal-grupo-title">
+                    <div class="modal-card">
+                        <div class="modal-card__header">
+                            <h2 id="modal-grupo-title" class="modal-card__title">Nuevo Grupo</h2>
+                            <button type="button" class="icon-btn" data-modal-close aria-label="Cerrar modal">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+
+                        <form action="#" method="post">
+                            
+                            <!-- Campo 1: Nombre del grupo -->
+                            <div class="mb-3">
+                                <label for="grupo-nombre" class="login-label">Nombre del grupo</label>
+                                <input type="text" 
+                                       id="grupo-nombre" 
+                                       name="nombre" 
+                                       class="pill-input pill-input--plain" 
+                                       placeholder="Ej. Equipo Gamma" 
+                                       required>
+                            </div>
+
+                            <!-- Campo 2: Curso -->
+                            <div class="mb-4">
+                                <label for="grupo-curso" class="login-label">Curso</label>
+                                <div class="lauki-select" data-custom-select>
+                                    <!-- BACKEND (Curso.java): Poblar opciones con th:each="curso : ${cursos}"
+                                         th:value="${curso.id}" th:text="${curso.nombre}" -->
+                                    <select id="grupo-curso" name="cursoId" class="d-none" required>
+                                        <option value="" selected disabled>Selecciona un curso</option>
+                                        <option value="1">1º DAW</option>
+                                        <option value="2">2º DAW</option>
+                                        <option value="3">1º DAM</option>
+                                    </select>
+
+                                    <button type="button" class="lauki-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="lauki-select__value is-placeholder">Selecciona un curso</span>
+                                        <i class="bi bi-chevron-down lauki-select__arrow"></i>
+                                    </button>
+
+                                    <ul class="lauki-select__menu d-none" role="listbox"></ul>
+                                </div>
+                            </div>
+
+                            <div class="modal-card__footer">
+                                <button type="button" class="btn--ghost" data-modal-close>
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="btn--primary">
+                                    Guardar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Scripts (Solo vista previa VS Code) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" th:remove="all"></script>
+    <script src="../../static/js/main.js" th:remove="all"></script>
+</body>
+</html>
