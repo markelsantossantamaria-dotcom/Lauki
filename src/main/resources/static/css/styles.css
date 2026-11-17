@@ -1,0 +1,1121 @@
+/* =========================================
+   1. TOKENS Y SISTEMA DE TEMAS (Base Claro)
+   ========================================= */
+:root,
+[data-theme="light"] {
+    --color-bg-base: #FFFFFF;
+    --color-bg-surface: #FFFFFF;
+    --color-bg-elevated: #F3F4F6;
+    --color-text-primary: #111827;
+    --color-text-secondary: #4B5563;
+    --color-text-disabled: #5A5F66;
+    --color-border-subtle: #E5E7EB;
+    --color-border-strong: #D1D5DB;
+    --color-success: #16A34A;
+    --color-warning: #D97706;
+    --color-error: #DC2626;
+    --color-progress: #0969DA;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(17, 24, 39, 0.08);
+    --shadow-lg: 0 10px 25px rgba(17, 24, 39, 0.12);
+}
+
+[data-theme="dark"] {
+    --color-bg-base: #141518;
+    --color-bg-surface: #1B1E24;
+    --color-bg-elevated: #23262E;
+    --color-text-primary: #F2F3F5;
+    --color-text-secondary: #9AA0A8;
+    --color-text-disabled: #5A5F66;
+    --color-border-subtle: #2A2E36;
+    --color-border-strong: #3A3F48;
+    --color-success: #3FB950;
+    --color-warning: #D29922;
+    --color-error: #DA3633;
+    --color-progress: #4C8DFF;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.65);
+}
+
+/* =========================================
+   2. COLORES DE ACENTO (Magenta / Cian)
+   ========================================= */
+:root,
+[data-accent="magenta"] {
+    --color-accent: #DB2777;
+    --color-accent-hover: #BE185D;
+}
+
+[data-theme="dark"][data-accent="magenta"] {
+    --color-accent: #FF4A7D;
+    --color-accent-hover: #E63A6A;
+}
+
+[data-accent="cyan"] {
+    --color-accent: #0E7490;
+    --color-accent-hover: #155E75;
+}
+
+[data-theme="dark"][data-accent="cyan"] {
+    --color-accent: #06B6D4;
+    --color-accent-hover: #0891B2;
+}
+
+/* =========================================
+   3. BASE, TIPOGRAFÍA Y TEXTURA GLOBAL
+   ========================================= */
+html,
+body,
+#root {
+    max-width: 100%;
+    overflow-x: clip;
+}
+
+body {
+    background-color: var(--color-bg-base);
+    color: var(--color-text-primary);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Textura de ruido global al 3% */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)"/></svg>');
+}
+
+h1,
+h2,
+h3,
+.font-display {
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.font-mono {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* =========================================
+   4. LAYOUT GLOBAL Y RESPONSIVE (Ajustado a 100vh sin scroll)
+   ========================================= */
+.admin {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: clip;
+}
+
+.admin__main {
+    width: 100%;
+    min-width: 0;
+    padding: 1.5rem 2.5rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin__main > :not(.toast-lauki):not(.modal-overlay) {
+    width: 100%;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.topbar {
+    display: none;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    gap: 20px;
+}
+
+.card-grid--2x2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+@media (max-width: 860px) {
+    .admin {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        background: var(--color-bg-surface);
+        border-bottom: 1px solid var(--color-border-subtle);
+    }
+
+    .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        z-index: 40;
+        width: 250px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar--open {
+        transform: translateX(0);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 30;
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    .admin__main {
+        padding: 1.5rem 1rem;
+    }
+
+    .sidebar__toggle {
+        display: none !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .card-grid,
+    .card-grid--2x2 {
+        grid-template-columns: 1fr;
+    }
+
+    .access-card__number {
+        font-size: 1.5rem;
+    }
+}
+
+/* Estado colapsado del Sidebar en escritorio (> 860px) */
+@media (min-width: 861px) {
+    .admin {
+        transition: grid-template-columns 0.25s ease;
+    }
+
+    [data-sidebar="collapsed"] .admin {
+        grid-template-columns: 72px minmax(0, 1fr);
+    }
+
+    [data-sidebar="collapsed"] .sidebar__header {
+        justify-content: center;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    [data-sidebar="collapsed"] .sidebar__brand {
+        display: none;
+    }
+
+    [data-sidebar="collapsed"] .sidebar__link {
+        justify-content: center;
+        padding: 0.75rem 0;
+    }
+
+    [data-sidebar="collapsed"] .sidebar__link span {
+        display: none;
+    }
+
+    [data-sidebar="collapsed"] .sidebar__footer {
+        flex-direction: column;
+        gap: 12px;
+        padding: 1.25rem 0.5rem !important;
+    }
+
+    [data-sidebar="collapsed"] .accent-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    [data-sidebar="collapsed"] .admin__main > :not(.toast-lauki):not(.modal-overlay) {
+        max-width: none;
+    }
+}
+
+/* =========================================
+   5. SIDEBAR Y NAVEGACIÓN
+   ========================================= */
+.sidebar {
+    background-color: var(--color-bg-surface);
+    border-right: 1px solid var(--color-border-subtle);
+    box-shadow: var(--shadow-sm);
+}
+
+.sidebar__link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0.75rem 1rem;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sidebar__link:hover {
+    background-color: var(--color-bg-elevated);
+    color: var(--color-text-primary);
+}
+
+.sidebar__link--active {
+    background-color: var(--color-bg-elevated);
+    color: var(--color-text-primary);
+    border-left: 3px solid var(--color-accent);
+    border-radius: 8px;
+}
+
+.sidebar__link i {
+    font-size: 18px;
+    line-height: 1;
+    width: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =========================================
+   6. TARJETAS DASHBOARD Y MENÚ USUARIO
+   ========================================= */
+.access-card {
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 8px;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: var(--color-text-primary);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.access-card:hover {
+    border-color: var(--color-border-subtle);
+    border-top: 2px solid var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.access-card .icon-wrapper {
+    color: var(--color-text-secondary);
+    transition: color 0.2s ease;
+}
+
+.access-card:hover .icon-wrapper {
+    color: var(--color-accent);
+}
+
+.user-menu-btn {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-subtle);
+    color: var(--color-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+}
+
+.user-menu-btn:hover {
+    border-color: var(--color-border-strong);
+}
+
+.user-menu-btn .avatar {
+    background: #2A2E36;
+    color: #FFFFFF;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* =========================================
+   7. CONTROLES DE TEMA Y ACENTO (Unificados en todas las vistas)
+   ========================================= */
+.accent-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.accent-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 50% !important;
+    border: none !important;
+    padding: 0 !important;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #111827;
+    font-size: 13px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.accent-swatch--magenta {
+    background-color: #DB2777 !important;
+}
+
+.accent-swatch--cyan {
+    background-color: #0E7490 !important;
+}
+
+.accent-swatch i {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    font-weight: bold;
+}
+
+.accent-swatch.active {
+    box-shadow: 0 0 0 1.5px var(--color-bg-base), 0 0 0 3px var(--color-text-primary);
+}
+
+.accent-swatch.active i {
+    opacity: 1;
+}
+
+.theme-circle-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    line-height: 1;
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
+    color: var(--color-text-secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 13px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.theme-circle-btn:hover {
+    color: var(--color-text-primary);
+    border-color: var(--color-border-strong);
+}
+
+/* =========================================
+   8. SISTEMA GLOBAL DE BOTONES (Coherencia en todas las vistas)
+   ========================================= */
+.btn--primary,
+.btn--outline,
+.btn--ghost,
+.btn--danger {
+    height: 40px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 0 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+/* Acción Principal (Ghost Acento: + Nuevo Curso, Guardar, Iniciar sesión) */
+.btn--primary {
+    background-color: transparent;
+    border: 1.5px solid var(--color-accent);
+    color: var(--color-accent);
+}
+
+.btn--primary:hover {
+    background-color: var(--color-accent);
+    color: #FFFFFF;
+}
+
+[data-theme="dark"] .btn--primary:hover {
+    color: #0E0F12;
+}
+
+/* Acción Secundaria con borde */
+.btn--outline {
+    background-color: transparent;
+    border: 1px solid var(--color-border-strong);
+    color: var(--color-text-primary);
+}
+
+.btn--outline:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+/* Acción Terciaria / Cancelar */
+.btn--ghost {
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: var(--color-text-secondary);
+}
+
+.btn--ghost:hover {
+    background-color: var(--color-bg-elevated);
+    color: var(--color-text-primary);
+}
+
+/* Acción Destructiva (Eliminar, Finalizar Reto) */
+.btn--danger {
+    background-color: transparent;
+    border: 1.5px solid var(--color-error);
+    color: var(--color-error);
+}
+
+.btn--danger:hover {
+    background-color: var(--color-error);
+    color: #FFFFFF;
+}
+
+/* Variante compacta (--sm) para filas de tablas */
+.btn--sm {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 13px;
+}
+
+/* Variante píldora (Login y filtros) */
+.btn--pill,
+.btn--primary.rounded-pill {
+    height: 42px;
+    border-radius: 999px !important;
+}
+
+/* Botón de icono (32x32px para editar, borrar, cerrar) */
+.icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--color-text-secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.icon-btn:hover {
+    background-color: var(--color-bg-elevated);
+    color: var(--color-text-primary);
+}
+
+/* =========================================
+   9. PANTALLA DE LOGIN
+   ========================================= */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    position: relative;
+    background-color: var(--color-bg-base);
+    background-image:
+        linear-gradient(to right, rgba(0, 0, 0, 0.015) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.015) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+[data-theme="dark"] .login-page {
+    background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+}
+
+.login-controls {
+    position: fixed;
+    top: 24px;
+    right: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 50;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 420px;
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 12px;
+    padding: 3rem 2.5rem;
+    box-shadow: var(--shadow-sm);
+    z-index: 10;
+}
+
+.login-wordmark {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    color: var(--color-text-primary);
+    margin: 0 0 1.25rem 0;
+    line-height: 1;
+}
+
+.login-wordmark span {
+    color: var(--color-accent);
+}
+
+.login-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 4px 0;
+}
+
+.login-subtitle {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin: 0 0 1.5rem 0;
+}
+
+.login-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    margin-bottom: 6px;
+}
+
+.pill-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.pill-icon-left {
+    position: absolute;
+    left: 16px;
+    color: var(--color-text-disabled);
+    font-size: 15px;
+    pointer-events: none;
+}
+
+.pill-input {
+    width: 100%;
+    height: 42px;
+    border-radius: 999px;
+    border: 1px solid var(--color-border-strong);
+    background-color: transparent;
+    color: var(--color-text-primary);
+    padding: 0 16px 0 42px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.pill-input--password {
+    padding-right: 42px;
+}
+
+.pill-input::placeholder {
+    color: var(--color-text-disabled);
+}
+
+.pill-input:focus {
+    border-color: var(--color-accent);
+}
+
+.pill-input.is-invalid {
+    border-color: var(--color-error);
+}
+
+.pill-icon-btn {
+    position: absolute;
+    right: 14px;
+    background: transparent;
+    border: none;
+    color: var(--color-text-disabled);
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.pill-icon-btn:hover {
+    color: var(--color-text-secondary);
+}
+
+.field__error {
+    color: var(--color-error);
+    font-size: 12px;
+    margin: 5px 0 0 12px;
+}
+
+.login-forgot-link {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.login-forgot-link:hover {
+    color: var(--color-accent);
+}
+
+/* =========================================
+   10. TABLAS DE GESTIÓN Y MODALES (Reutilizables en todo Admin)
+   ========================================= */
+.table-card {
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 10px;
+    box-shadow: var(--shadow-md);
+    overflow-x: auto;
+}
+
+.lauki-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.lauki-table thead {
+    background-color: var(--color-bg-elevated);
+    border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.lauki-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-secondary);
+    padding: 14px 24px;
+    text-align: left;
+}
+
+.lauki-table td {
+    padding: 16px 24px;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--color-border-subtle);
+    transition: background-color 0.15s ease;
+}
+
+.lauki-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.lauki-table tbody tr:hover td {
+    background-color: var(--color-bg-elevated);
+}
+
+/* Input en forma de píldora sin icono izquierdo (para modales) */
+.pill-input--plain {
+    padding-left: 18px;
+    padding-right: 18px;
+}
+
+/* Ventana Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background-color: rgba(17, 24, 39, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+[data-theme="dark"] .modal-overlay {
+    background-color: rgba(0, 0, 0, 0.65);
+}
+
+.modal-card {
+    width: 100%;
+    max-width: 440px;
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 12px;
+    padding: 28px 32px;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.modal-card__title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.modal-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+/* Etiqueta de estado INACTIVO en tablas */
+.badge-inactive {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    margin-left: 8px;
+    border-radius: 999px;
+    border: 1px solid var(--color-border-strong);
+    background-color: var(--color-bg-elevated);
+    color: var(--color-text-secondary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+/* Selector desplegable personalizado (Modales: Nuevo Alumno, Grupo, Reto...) */
+.lauki-select {
+    position: relative;
+    width: 100%;
+}
+
+.lauki-select__trigger {
+    width: 100%;
+    height: 42px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: 1px solid var(--color-border-strong);
+    background-color: var(--color-bg-surface);
+    color: var(--color-text-primary);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+}
+
+.lauki-select__trigger:hover {
+    border-color: var(--color-text-secondary);
+}
+
+.lauki-select.is-open .lauki-select__trigger {
+    border-color: var(--color-accent);
+}
+
+.lauki-select__value.is-placeholder {
+    color: var(--color-text-secondary);
+}
+
+.lauki-select__arrow {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    transition: transform 0.15s ease;
+}
+
+.lauki-select.is-open .lauki-select__arrow {
+    transform: rotate(180deg);
+}
+
+.lauki-select__menu {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(100% + 6px);
+    z-index: 1060;
+    list-style: none;
+    margin: 0;
+    padding: 8px;
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.lauki-select__option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.lauki-select__option:hover {
+    background-color: var(--color-bg-elevated);
+}
+
+.lauki-select__option.is-selected {
+    color: var(--color-accent);
+    font-weight: 600;
+}
+
+/* =========================================
+   11. TARJETAS DE GESTIÓN DE GRUPOS
+   ========================================= */
+.group-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+@media (max-width: 991.98px) {
+    .group-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.group-card {
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-top: 2px solid transparent;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.group-card:hover,
+.group-card:focus-within {
+    border-top-color: var(--color-accent);
+}
+
+.group-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.group-card__title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+    line-height: 1.25;
+}
+
+.group-card__course {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+    margin: 4px 0 0 0;
+}
+
+.group-card__count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    padding-top: 3px;
+}
+
+.group-card__members {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 22px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.group-member {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--color-text-primary);
+}
+
+.group-member__avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-subtle);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    flex-shrink: 0;
+}
+
+.group-card__form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.btn--card-add {
+    height: 42px;
+    padding: 0 18px;
+    border-radius: 10px;
+    border: 1px solid var(--color-border-strong);
+    background-color: var(--color-bg-surface);
+    color: var(--color-text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn--card-add:hover {
+    background-color: var(--color-bg-elevated);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+/* =========================================
+   12. GESTIÓN DE RETOS (Badges de estado, Textarea y Acciones de fila)
+   ========================================= */
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 12px;
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.badge-status--active {
+    color: #16a34a;
+    background-color: rgba(22, 163, 74, 0.06);
+    border: 1px solid rgba(22, 163, 74, 0.55);
+}
+
+[data-theme="dark"] .badge-status--active {
+    color: #4ade80;
+    background-color: rgba(74, 222, 128, 0.08);
+    border-color: rgba(74, 222, 128, 0.45);
+}
+
+.badge-status--finished {
+    color: var(--color-text-secondary);
+    background-color: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-strong);
+}
+
+/* Textarea estilizado para modales */
+.lauki-textarea {
+    width: 100%;
+    min-height: 92px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--color-border-strong);
+    background-color: var(--color-bg-surface);
+    color: var(--color-text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    transition: border-color 0.15s ease;
+}
+
+.lauki-textarea:hover {
+    border-color: var(--color-text-secondary);
+}
+
+.lauki-textarea:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+/* Acciones en filas de tabla (Editar y Finalizar Reto) */
+.btn--row-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--color-text-secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.btn--row-icon:hover {
+    background-color: var(--color-bg-elevated);
+    color: var(--color-text-primary);
+}
+
+.btn--row-finish {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid var(--color-border-strong);
+    background-color: var(--color-bg-surface);
+    color: var(--color-text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn--row-finish:hover {
+    background-color: var(--color-bg-elevated);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
