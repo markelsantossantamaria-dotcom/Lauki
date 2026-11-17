@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión · Lauki</title>
+    
+    <script>
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('lauki-theme') || 'light');
+        document.documentElement.setAttribute('data-accent', localStorage.getItem('lauki-accent') || 'magenta');
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- BACKEND: En Spring Boot usará th:href="@{/css/styles.css}". href="./css/styles.css" es para vista previa en VS Code -->
+    <link rel="stylesheet" th:href="@{/css/styles.css}" href="../static/css/styles.css">
+</head>
+<body class="login-page">
+
+    <!-- Controles flotantes (Acento y Tema Claro/Oscuro) -->
+    <div class="login-controls">
+        <div class="accent-group" role="group" aria-label="Selector de color de acento">
+            <button type="button" class="accent-swatch active" data-accent-option="magenta" aria-label="Acento Magenta" style="background-color: #DB2777;">
+                <i class="bi bi-check2"></i>
+            </button>
+            <button type="button" class="accent-swatch" data-accent-option="cyan" aria-label="Acento Cian" style="background-color: #0E7490;">
+                <i class="bi bi-check2"></i>
+            </button>
+        </div>
+
+        <button type="button" class="theme-circle-btn shadow-sm" id="theme-toggle" aria-label="Cambiar tema">
+            <i class="bi bi-moon"></i>
+        </button>
+    </div>
+
+    <!-- Tarjeta central -->
+    <main class="login-card">
+        
+        <header class="mb-4">
+            <h1 class="login-wordmark">Lauki<span>.</span></h1>
+            <h2 class="login-title">Iniciar sesión</h2>
+            <p class="login-subtitle">Accede a tu espacio de trabajo.</p>
+        </header>
+
+        <!-- =========================================================================
+             BACKEND (AuthController.java): ALERTA DE ERROR DE AUTENTICACIÓN
+             - Oculta por defecto en VS Code mediante la clase 'd-none'.
+             - Para mostrarla cuando fallen las credenciales, añadid:
+               th:if="${param.error != null or error != null}"
+               y quitad 'd-none' (o usad th:class="'alert d-flex align-items-center gap-2 py-2 px-3 mb-3'")
+             ========================================================================= -->
+        <div class="d-none" 
+             role="alert" 
+             style="background-color: rgba(220, 38, 38, 0.08); border: 1px solid var(--color-error); color: var(--color-error); border-radius: 8px; font-size: 13px;">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <!-- BACKEND: Podéis hacer el mensaje dinámico con th:text="${error ?: 'Correo o contraseña incorrectos'}" -->
+            <span>Correo o contraseña incorrectos</span>
+        </div>
+
+        <!-- =========================================================================
+             BACKEND (AuthController.java): FORMULARIO DE LOGIN
+             - Añadir th:action="@{/login}" (ajustar si el @PostMapping tiene otra ruta)
+             - Revisar que los atributos name="email" y name="password" coincidan con los 
+               @RequestParam o atributos del objeto que reciba AuthController.
+             ========================================================================= -->
+        <form action="#" method="post" id="login-form" novalidate>
+            
+            <div class="mb-3">
+                <label for="email" class="login-label">Correo</label>
+                <div class="pill-input-wrapper">
+                    <i class="bi bi-envelope pill-icon-left"></i>
+                    <!-- BACKEND: Si usáis th:object, añadir th:field="*{email}" -->
+                    <input type="email" id="email" name="email" class="pill-input" placeholder="tu@correo.com" required>
+                </div>
+                <p class="field__error d-none" id="email-error"></p>
+            </div>
+
+            <div class="mb-4">
+                <label for="password" class="login-label">Contraseña</label>
+                <div class="pill-input-wrapper">
+                    <i class="bi bi-lock pill-icon-left"></i>
+                    <!-- BACKEND: Si usáis th:object, añadir th:field="*{password}" -->
+                    <input type="password" id="password" name="password" class="pill-input pill-input--password" placeholder="••••••••" required>
+                    <button type="button" class="pill-icon-btn" id="toggle-password" aria-label="Mostrar u ocultar contraseña">
+                        <i class="bi bi-eye-slash"></i>
+                    </button>
+                </div>
+                <p class="field__error d-none" id="password-error"></p>
+            </div>
+
+            <button type="submit" class="btn btn--primary w-100 rounded-pill">
+                Iniciar sesión
+            </button>
+
+            <div class="text-center mt-3 pt-1">
+                <!-- Solo visual según especificación (sin flujo de recuperación) -->
+                <a href="#" class="login-forgot-link">¿Olvidaste tu contraseña?</a>
+            </div>
+
+        </form>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/main.js}" src="../static/js/main.js"></script>
+</body>
+</html>
