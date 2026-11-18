@@ -22,7 +22,7 @@ public class SecurityConfig {
         http
         	.authorizeHttpRequests(auth -> auth
         	    .requestMatchers("/login", "/css/**", "/js/**").permitAll()
-        	    .requestMatchers("/admin/**").hasRole("ADMINISTRADOR")
+        	    .requestMatchers("/admin", "/admin/**").hasRole("ADMINISTRADOR")
         	    .requestMatchers("/tablero/**", "/grupo/**", "/api/**").hasAnyRole("ESTUDIANTE", "ADMINISTRADOR")
         	    .anyRequest().authenticated()
         	)
@@ -32,7 +32,7 @@ public class SecurityConfig {
                     boolean isAdmin = authentication.getAuthorities().stream()
                             .anyMatch(a -> a.getAuthority().equals("ROLE_ADMINISTRADOR"));
                     if (isAdmin) {
-                        response.sendRedirect("/admin/cursos-usuarios");
+                        response.sendRedirect("/admin/panel");
                     } else {
                         response.sendRedirect("/tablero");
                     }
