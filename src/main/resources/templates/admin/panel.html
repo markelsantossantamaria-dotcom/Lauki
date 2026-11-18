@@ -5,119 +5,139 @@
      VISTA: Panel de Control (Dashboard Principal de Administración)
      CONTROLADOR: AdminController.java -> @GetMapping("/admin") devuelve "admin/panel"
      ========================================================================= -->
-<html lang="es" 
-      xmlns:th="http://www.thymeleaf.org" 
-      data-layout-decorate="~{layout}">
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      data-theme="light"
+      data-accent="magenta"
+      data-sidebar="expanded">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control · Administrador</title>
+    <title>Panel de Control - Lauki</title>
 
     <!-- =========================================================================
          SOLO PARA VISTA PREVIA EN VS CODE (Live Server):
          th:remove="all" hace que Spring Boot borre estas líneas al unir con layout.html.
          ========================================================================= -->
     <script th:remove="all">
-        document.documentElement.setAttribute('data-theme', localStorage.getItem('lauki-theme') || 'light');
-        document.documentElement.setAttribute('data-accent', localStorage.getItem('lauki-accent') || 'magenta');
-        document.documentElement.setAttribute('data-sidebar', localStorage.getItem('lauki-sidebar') || 'expanded');
+        (function () {
+            const theme = localStorage.getItem('lauki-theme') || 'light';
+            const accent = localStorage.getItem('lauki-accent') || 'magenta';
+            const sidebar = localStorage.getItem('lauki-sidebar') || 'expanded';
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('data-accent', accent);
+            document.documentElement.setAttribute('data-sidebar', sidebar);
+        })();
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet" th:remove="all">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" th:remove="all">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" th:remove="all">
-    <link rel="stylesheet" href="../../static/css/styles.css" th:remove="all">
+    <link th:remove="all" rel="preconnect" href="https://fonts.googleapis.com">
+    <link th:remove="all" rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link th:remove="all" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <link th:remove="all" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link th:remove="all" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link th:remove="all" rel="stylesheet" href="../../static/css/styles.css">
 </head>
 <body>
 
     <!-- Contenedor de vista previa (th:remove="tag" lo elimina en Spring Boot dejando solo el fragmento) -->
     <div class="admin" th:remove="tag">
 
-        <!-- TOPBAR MÓVIL (Solo vista previa VS Code) -->
+        <!-- TOPBAR MÓVIL PARA VISTA PREVIA EN VS CODE (Descartado por Thymeleaf) -->
         <header class="topbar" th:remove="all">
-            <button type="button" class="btn p-0 text-reset" id="mobile-menu-toggle" aria-label="Abrir menú">
-                <i class="bi bi-list fs-3"></i>
+            <button id="mobile-menu-toggle" class="icon-btn" type="button" aria-label="Abrir menú">
+                <i class="bi bi-list fs-4"></i>
             </button>
-            <h2 class="m-0 font-display fs-5 fw-bold">
-                Lauki<span style="color: var(--color-accent); font-size: 0.6em; vertical-align: 0.1em;">▮</span>
-            </h2>
-            <div class="user-menu-btn p-0" style="width: 32px; height: 32px; justify-content: center;">
-                <span style="font-size: 12px; font-weight:bold;">MR</span>
-            </div>
+            <span class="font-display fw-bold fs-4" style="letter-spacing: -0.04em;">
+                Lauki<span style="color: var(--color-accent);">.</span>
+            </span>
+            <div style="width: 32px;"></div>
         </header>
 
-        <div class="sidebar-backdrop d-none" id="sidebar-backdrop" th:remove="all"></div>
+        <div id="sidebar-backdrop" class="sidebar-backdrop d-none" th:remove="all"></div>
 
-        <!-- SIDEBAR (Solo vista previa VS Code - Spring Boot usa la de layout.html) -->
-        <aside class="sidebar d-flex flex-column" th:remove="all">
-            <div class="sidebar__header p-4 d-flex align-items-center gap-3">
-                <button type="button" class="btn p-0 text-reset sidebar__toggle" data-sidebar-toggle aria-label="Colapsar menú">
-                    <i class="bi bi-list fs-3"></i>
-                </button>
-                <h2 class="sidebar__brand m-0 font-display fw-bold" style="font-size: 28px;">
-                    Lauki<span style="color: var(--color-accent); font-size: 0.6em; vertical-align: 0.1em;">▮</span>
-                </h2>
+        <!-- SIDEBAR ADMINISTRADOR PARA VISTA PREVIA EN VS CODE (Descartado por Thymeleaf) -->
+        <aside class="sidebar d-flex flex-column justify-content-between p-3" th:remove="all">
+            <div>
+                <div class="sidebar__header d-flex align-items-center gap-2 px-2 py-3 mb-3">
+                    <button class="icon-btn sidebar__toggle" type="button" data-sidebar-toggle aria-label="Colapsar menú">
+                        <i class="bi bi-list fs-5"></i>
+                    </button>
+                    <span class="sidebar__brand font-display fw-bold" style="font-size: 28px; letter-spacing: -0.04em; line-height: 1;">
+                        Lauki<span style="color: var(--color-accent);">.</span>
+                    </span>
+                </div>
+
+                <nav class="d-flex flex-column gap-1" aria-label="Navegación de administrador">
+                    <a href="./panel.html" class="sidebar__link sidebar__link--active" title="Inicio" aria-current="page">
+                        <i class="bi bi-house"></i>
+                        <span>Inicio</span>
+                    </a>
+                    <a href="./cursos.html" class="sidebar__link" title="Cursos">
+                        <i class="bi bi-book"></i>
+                        <span>Cursos</span>
+                    </a>
+                    <a href="./usuarios.html" class="sidebar__link" title="Usuarios">
+                        <i class="bi bi-people"></i>
+                        <span>Usuarios</span>
+                    </a>
+                    <a href="./grupos.html" class="sidebar__link" title="Grupos">
+                        <i class="bi bi-grid"></i>
+                        <span>Grupos</span>
+                    </a>
+                    <a href="./retos.html" class="sidebar__link" title="Retos">
+                        <i class="bi bi-flag"></i>
+                        <span>Retos</span>
+                    </a>
+                </nav>
             </div>
 
-            <nav class="flex-grow-1 px-3 mt-2" aria-label="Menú principal">
-                <div id="menu-admin">
-                    <a href="./panel.html" title="Inicio" class="sidebar__link sidebar__link--active mb-1">
-                        <i class="bi bi-house"></i> <span>Inicio</span>
-                    </a>
-                    <a href="./cursos.html" title="Cursos" class="sidebar__link mb-1">
-                        <i class="bi bi-book"></i> <span>Cursos</span>
-                    </a>
-                    <a href="./usuarios.html" title="Usuarios" class="sidebar__link mb-1">
-                        <i class="bi bi-people"></i> <span>Usuarios</span>
-                    </a>
-                    <a href="./grupos.html" title="Grupos" class="sidebar__link mb-1">
-                        <i class="bi bi-grid"></i> <span>Grupos</span>
-                    </a>
-                    <a href="./retos.html" title="Retos" class="sidebar__link mb-1">
-                        <i class="bi bi-flag"></i> <span>Retos</span>
-                    </a>
-                </div>
-            </nav>
-
-            <div class="sidebar__footer p-4 border-top d-flex justify-content-between align-items-center" style="border-color: var(--color-border-subtle) !important;">
-                <div class="accent-group" role="group" aria-label="Selector de color de acento">
-                    <button type="button" class="accent-swatch accent-swatch--magenta active" data-accent-option="magenta" aria-label="Acento Magenta">
-                        <i class="bi bi-check2"></i>
-                    </button>
-                    <button type="button" class="accent-swatch accent-swatch--cyan" data-accent-option="cyan" aria-label="Acento Cian">
-                        <i class="bi bi-check2"></i>
-                    </button>
-                </div>
-
-                <button type="button" class="theme-circle-btn shadow-sm" id="theme-toggle" aria-label="Cambiar tema">
+            <div class="sidebar__footer d-flex align-items-center justify-content-between pt-3 px-2" style="border-top: 1px solid var(--color-border-subtle);">
+                <button id="theme-toggle" class="theme-circle-btn" type="button" aria-label="Cambiar tema">
                     <i class="bi bi-moon"></i>
                 </button>
+                <div class="accent-group" role="group" aria-label="Color de acento">
+                    <button class="accent-swatch accent-swatch--magenta active" type="button" data-accent-option="magenta" aria-label="Acento magenta">
+                        <i class="bi bi-check"></i>
+                    </button>
+                    <button class="accent-swatch accent-swatch--cyan" type="button" data-accent-option="cyan" aria-label="Acento cian">
+                        <i class="bi bi-check"></i>
+                    </button>
+                </div>
             </div>
         </aside>
 
         <!-- CONTENIDO PRINCIPAL -->
         <main class="admin__main" th:remove="tag">
 
-            <!-- Menú de usuario (Solo vista previa VS Code) -->
-            <div class="d-none d-md-flex justify-content-end mb-3 dropdown" th:remove="all">
-                <button class="user-menu-btn" data-bs-toggle="dropdown">
-                    <div class="avatar">MR</div>
-                    <span style="font-size: 14px; font-weight: 500;">Marta Ruiz</span>
-                    <i class="bi bi-chevron-down" style="font-size: 12px; color: var(--color-text-secondary);"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow" style="background-color: var(--color-bg-surface); border-color: var(--color-border-subtle);">
-                    <li>
-                        <a class="dropdown-item text-danger" href="../login.html">
-                            <i class="bi bi-box-arrow-right me-2"></i> Cerrar sesión
-                        </a>
-                    </li>
-                </ul>
+            <!-- MENÚ DE USUARIO SUPERIOR PARA VISTA PREVIA EN VS CODE (Descartado por Thymeleaf) -->
+            <div class="d-flex justify-content-end mb-3" th:remove="all">
+                <div class="dropdown">
+                    <button class="user-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="avatar">MR</span>
+                        <span style="font-size: 13px; font-weight: 500;">Marta Ruiz</span>
+                        <i class="bi bi-chevron-down" style="font-size: 11px; color: var(--color-text-secondary);"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="background-color: var(--color-bg-surface); border-color: var(--color-border-subtle); border-radius: 10px; min-width: 200px;">
+                        <li class="px-3 py-2">
+                            <div style="font-size: 13px; font-weight: 600; color: var(--color-text-primary);">Marta Ruiz</div>
+                            <div style="font-size: 12px; color: var(--color-text-secondary);">marta.ruiz@lauki.edu</div>
+                        </li>
+                        <li><hr class="dropdown-divider" style="border-color: var(--color-border-subtle);"></li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2" href="../login.html" style="font-size: 13px; color: var(--color-error);">
+                                <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
 
             <!-- =========================================================================
                  BLOQUE REAL QUE SPRING BOOT INYECTA EN layout.html
                  ========================================================================= -->
-            <div data-layout-fragment="content">
-                
+            <div layout:fragment="content">
+
                 <header class="page-header mb-4">
                     <p class="font-mono text-uppercase m-0" style="color: var(--color-text-secondary); font-size: 12px; letter-spacing: 0.05em;">
                         Administrador · Panel de Control
@@ -131,9 +151,9 @@
                 </header>
 
                 <section class="card-grid card-grid--2x2">
-                    
+
                     <!-- TARJETA 1: GESTIÓN DE CURSOS -> Lleva a admin/cursos.html
-                         BACKEND (AdminController): 
+                         BACKEND (AdminController):
                          - Contador: añadir th:text="${totalCursos != null ? #numbers.formatInteger(totalCursos, 2) : '00'}" -->
                     <a th:href="@{/admin/cursos}" href="./cursos.html" class="access-card">
                         <div class="icon-wrapper mb-2"><i class="bi bi-book fs-4"></i></div>
@@ -147,7 +167,7 @@
                     </a>
 
                     <!-- TARJETA 2: GESTIÓN DE USUARIOS -> Lleva a admin/usuarios.html
-                         BACKEND (AdminController): 
+                         BACKEND (AdminController):
                          - Contador: añadir th:text="${totalUsuarios != null ? #numbers.formatInteger(totalUsuarios, 2) : '00'}" -->
                     <a th:href="@{/admin/usuarios}" href="./usuarios.html" class="access-card">
                         <div class="icon-wrapper mb-2"><i class="bi bi-person fs-4"></i></div>
@@ -161,7 +181,7 @@
                     </a>
 
                     <!-- TARJETA 3: GESTIÓN DE GRUPOS -> Lleva a admin/grupos.html
-                         BACKEND (AdminController): 
+                         BACKEND (AdminController):
                          - Contador: añadir th:text="${totalGrupos != null ? #numbers.formatInteger(totalGrupos, 2) : '00'}" -->
                     <a th:href="@{/admin/grupos}" href="./grupos.html" class="access-card">
                         <div class="icon-wrapper mb-2"><i class="bi bi-grid fs-4"></i></div>
@@ -175,7 +195,7 @@
                     </a>
 
                     <!-- TARJETA 4: GESTIÓN DE RETOS -> Lleva a admin/retos.html
-                         BACKEND (AdminController): 
+                         BACKEND (AdminController):
                          - Contador: añadir th:text="${totalRetos != null ? #numbers.formatInteger(totalRetos, 2) : '00'}" -->
                     <a th:href="@{/admin/retos}" href="./retos.html" class="access-card">
                         <div class="icon-wrapper mb-2"><i class="bi bi-flag fs-4"></i></div>
@@ -196,7 +216,7 @@
     </div>
 
     <!-- Scripts (Solo vista previa VS Code) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" th:remove="all"></script>
-    <script src="../../static/js/main.js" th:remove="all"></script>
+    <script th:remove="all" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:remove="all" src="../../static/js/main.js"></script>
 </body>
 </html>
