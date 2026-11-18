@@ -307,4 +307,369 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    /* 9. TABLERO KANBAN (ROL ESTUDIANTE: Filtro de fase, Modales de tarea y Drag & Drop) */
+    function showLaukiToast(message, type = 'success') {
+        let container = document.getElementById('lauki-toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'lauki-toast-container';
+            document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.className = `toast-lauki ${type === 'error' ? 'toast-lauki--error' : 'toast-lauki--success'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        const iconClass = type === 'error' ? 'bi-exclamation-circle-fill' : 'bi-check-circle-fill';
+        const iconColor = type === 'error' ? 'var(--color-error)' : 'var(--color-success)';
+        toast.innerHTML = `
+            <i class="bi ${iconClass}" style="color: ${iconColor}; font-size: 16px;"></i>
+            <span>${message}</span>
+            <button type="button" class="icon-btn ms-auto" aria-label="Cerrar aviso">
+                <i class="bi bi-x-lg" style="font-size: 12px;"></i>
+            </button>
+        `;
+        toast.querySelector('button').addEventListener('click', () => toast.remove());
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.25s ease';
+            setTimeout(() => toast.remove(), 250);
+        }, 4000);
+    }
+
+    // Sincronización del icono/avatar de responsable en Nueva Tarea y Editar Tarea
+    function updateResponsablePreview(selectEl) {
+        if (!selectEl) return;
+        const preview = document.querySelector(`[data-responsable-preview="${selectEl.id}"]`);
+        if (!preview) return;
+        const selectedOpt = selectEl.options[selectEl.selectedIndex];
+        if (!selectEl.value || !selectedOpt) {
+            preview.className = 'task-card__avatar task-card__avatar--unassigned';
+            preview.innerHTML = '<i class="bi bi-exclamation-triangle"></i>';
+        } else {
+            const parts = selectedOpt.textContent.trim().split(/\s+/);
+            const initials = (parts[0]?.[0] || '') + (parts[1]?.[0] || '');
+            preview.className = 'task-card__avatar';
+            preview.textContent = initials.toUpperCase();
+        }
+    }
+
+    ['nueva-tarea-responsable', 'edit-tarea-responsable'].forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        const wrapper = sel.closest('[data-custom-select]');
+        wrapper?.querySelectorAll('.lauki-select__option').forEach(li => {
+            li.addEventListener('click', () => updateResponsablePreview(sel));
+        });
+    });
+
+    // Sincronizar helper para establecer valor en custom selects dinámicamente
+    function setCustomSelectValue(selectEl, value) {
+        if (!selectEl) return;
+        selectEl.value = value ?? '';
+        const wrapper = selectEl.closest('[data-custom-select]');
+        const triggerText = wrapper?.querySelector('.lauki-select__value');
+        const menu = wrapper?.querySelector('.lauki-select__menu');
+        const selectedIndex = selectEl.selectedIndex;
+
+        if (triggerText && selectedIndex >= 0) {
+            const opt = selectEl.options[selectedIndex];
+            triggerText.textContent = opt.textContent;
+            triggerText.classList.toggle('is-placeholder', opt.disabled);
+        }
+        if (menu) {
+            menu.querySelectorAll('.lauki-select__option').forEach((li, idx) => {
+                li.classList.toggle('is-selected', idx === selectedIndex);
+                li.querySelector('i')?.classList.toggle('d-none', idx !== selectedIndex);
+            });
+        }
+        updateResponsablePreview(selectEl);
+    }
+
+    // Actualizar contadores de columnas del Kanban
+    function updateKanbanCounts() {
+        document.querySelectorAll('.kanban__column').forEach(col => {
+            const visibleCards = Array.from(col.querySelectorAll('.task-card'))
+                .filter(card => !card.classList.contains('d-none'));
+            const counter = col.querySelector('.kanban__column-count');
+            if (counter) counter.textContent = visibleCards.length;
+        });
+    }
+
+    // Filtro por fase en cabecera de Mi Tablero
+    const phaseFilterWrapper = document.querySelector('[data-board-phase-filter]');
+    if (phaseFilterWrapper) {
+        const phaseSelect = phaseFilterWrapper.querySelector('select');
+        phaseFilterWrapper.querySelectorAll('.lauki-select__option').forEach(li => {
+            li.addEventListener('click', () => {
+                const selectedPhase = phaseSelect.value;
+                document.querySelectorAll('.task-card').forEach(card => {
+                    const cardPhase = card.getAttribute('data-task-fase-id');
+                    const show = selectedPhase === 'todas' || cardPhase === selectedPhase;
+                    card.classList.toggle('d-none', !show);
+                });
+                updateKanbanCounts();
+            });
+        });
+    }
+
+    // Apertura de modales desde tarjetas (Editar, Descripción, Comentarios)
+    document.querySelectorAll('.task-card').forEach(card => {
+        const openEdit = () => {
+            const modal = document.getElementById('modal-editar-tarea');
+            if (!modal) return;
+            document.getElementById('edit-tarea-id').value = card.getAttribute('data-task-id') || '';
+            document.getElementById('edit-tarea-titulo').value = card.getAttribute('data-task-titulo') || '';
+            setCustomSelectValue(document.getElementById('edit-tarea-fase'), card.getAttribute('data-task-fase-id'));
+            setCustomSelectValue(document.getElementById('edit-tarea-responsable'), card.getAttribute('data-task-responsable-id'));
+            modal.classList.remove('d-none');
+        };
+
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('[data-open-desc-task]') || e.target.closest('[data-open-comments-task]')) return;
+            openEdit();
+        });
+
+        card.querySelector('[data-open-desc-task]')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const modal = document.getElementById('modal-descripcion-tarea');
+            if (!modal) return;
+            document.getElementById('desc-tarea-id').value = card.getAttribute('data-task-id') || '';
+            document.getElementById('desc-tarea-subtitle').textContent = card.getAttribute('data-task-fase-label') || '';
+            document.getElementById('desc-tarea-texto').value = card.getAttribute('data-task-descripcion') || '';
+            modal.classList.remove('d-none');
+        });
+
+        card.querySelector('[data-open-comments-task]')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const modal = document.getElementById('modal-comentarios-tarea');
+            if (!modal) return;
+            document.getElementById('comments-tarea-id').value = card.getAttribute('data-task-id') || '';
+            document.getElementById('modal-comments-tarea-title').textContent = card.getAttribute('data-task-titulo') || 'Comentarios';
+            modal.classList.remove('d-none');
+        });
+    });
+
+    // Drag & Drop con las 4 reglas del Kanban
+    const boardSection = document.querySelector('.kanban--board');
+    if (boardSection) {
+        let draggedCard = null;
+        let pendingBlockCard = null;
+
+        function rejectCardMove(card, errorMsg) {
+            card.classList.remove('task-card--rejected');
+            void card.offsetWidth;
+            card.classList.add('task-card--rejected');
+            showLaukiToast(errorMsg, 'error');
+        }
+
+        function applyCardStatusStyle(card, newStatus) {
+            card.classList.remove('task-card--progreso', 'task-card--supervision', 'task-card--completada', 'task-card--bloqueada');
+            if (newStatus === 'EN_PROGRESO') card.classList.add('task-card--progreso');
+            if (newStatus === 'EN_REVISION') card.classList.add('task-card--supervision');
+            if (newStatus === 'COMPLETADA') card.classList.add('task-card--completada');
+            if (newStatus === 'BLOQUEADA') card.classList.add('task-card--bloqueada');
+            card.setAttribute('data-task-status', newStatus);
+        }
+
+        document.querySelectorAll('.task-card').forEach(card => {
+            card.addEventListener('dragstart', () => {
+                draggedCard = card;
+                card.classList.add('task-card--dragging');
+            });
+            card.addEventListener('dragend', () => {
+                card.classList.remove('task-card--dragging');
+                document.querySelectorAll('.kanban__column').forEach(col => col.classList.remove('kanban__column--over'));
+            });
+        });
+
+        document.querySelectorAll('.kanban__column').forEach(col => {
+            col.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                col.classList.add('kanban__column--over');
+            });
+
+            col.addEventListener('dragleave', () => {
+                col.classList.remove('kanban__column--over');
+            });
+
+            col.addEventListener('drop', (e) => {
+                e.preventDefault();
+                col.classList.remove('kanban__column--over');
+                if (!draggedCard) return;
+
+                const currentStatus = draggedCard.getAttribute('data-task-status');
+                const targetStatus = col.getAttribute('data-column-status');
+                if (currentStatus === targetStatus) return;
+
+                const hasResponsable = draggedCard.getAttribute('data-has-responsable') === 'true';
+
+                // Regla 1: Sin responsable no se puede mover a ninguna columna
+                if (!hasResponsable) {
+                    rejectCardMove(draggedCard, 'Debes asignar un responsable antes de mover la tarea');
+                    return;
+                }
+
+                // Regla 2: Prohibido saltar desde Pendiente a En Supervisión o Completada
+                if (currentStatus === 'PENDIENTE' && (targetStatus === 'EN_REVISION' || targetStatus === 'COMPLETADA')) {
+                    rejectCardMove(draggedCard, 'Salto de fase no permitido');
+                    return;
+                }
+
+                // Regla 3: Mover a Bloqueada abre modal de motivo obligatorio antes de mover
+                if (targetStatus === 'BLOQUEADA') {
+                    pendingBlockCard = draggedCard;
+                    const blockModal = document.getElementById('modal-motivo-bloqueo');
+                    const blockIdInput = document.getElementById('bloqueo-tarea-id');
+                    if (blockIdInput) blockIdInput.value = draggedCard.getAttribute('data-task-id') || '';
+                    if (blockModal) blockModal.classList.remove('d-none');
+                    return;
+                }
+
+                // Movimiento válido
+                const listContainer = col.querySelector('.kanban__cards');
+                listContainer.appendChild(draggedCard);
+                applyCardStatusStyle(draggedCard, targetStatus);
+                updateKanbanCounts();
+
+                // Notificar al servidor Spring Boot si existe endpoint activo
+                const baseMoveUrl = boardSection.getAttribute('data-move-url');
+                const taskId = draggedCard.getAttribute('data-task-id');
+                if (baseMoveUrl && taskId && window.location.protocol !== 'file:') {
+                    fetch(`${baseMoveUrl}/${taskId}/mover`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({ estado: targetStatus })
+                    }).catch(() => {});
+                }
+            });
+        });
+
+        // Envío en vista previa estática del modal de motivo de bloqueo
+        const blockForm = document.getElementById('form-motivo-bloqueo');
+        blockForm?.addEventListener('submit', (e) => {
+            if (window.location.protocol === 'file:' && pendingBlockCard) {
+                e.preventDefault();
+                const motivo = document.getElementById('bloqueo-motivo-texto').value.trim();
+                if (!motivo) return;
+                const blockedCol = document.querySelector('.kanban__column[data-column-status="BLOQUEADA"] .kanban__cards');
+                blockedCol?.appendChild(pendingBlockCard);
+                applyCardStatusStyle(pendingBlockCard, 'BLOQUEADA');
+                updateKanbanCounts();
+                pendingBlockCard = null;
+                closeAllModals();
+            }
+        });
+    }
+
+    /* 10. EDICIÓN EN LÍNEA DE ROLES EN MI EQUIPO (estudiante/equipo.html) */
+    const roleClassMap = {
+        GESTOR: 'role-badge--gestor',
+        ANALISTA: 'role-badge--analista',
+        DESARROLLADOR: 'role-badge--desarrollador',
+        COLABORADOR: 'role-badge--colaborador'
+    };
+
+    document.addEventListener('click', (e) => {
+        const editBtn = e.target.closest('[data-team-edit-btn]');
+        if (editBtn) {
+            document.querySelectorAll('.team-member-card').forEach(otherCard => {
+                otherCard.querySelector('[data-team-view]')?.classList.remove('d-none');
+                otherCard.querySelector('[data-team-edit-form]')?.classList.add('d-none');
+            });
+
+            const card = editBtn.closest('.team-member-card');
+            if (!card) return;
+            card.querySelector('[data-team-view]')?.classList.add('d-none');
+            card.querySelector('[data-team-edit-form]')?.classList.remove('d-none');
+            return;
+        }
+
+        const cancelBtn = e.target.closest('[data-team-cancel-btn]');
+        if (cancelBtn) {
+            const card = cancelBtn.closest('.team-member-card');
+            if (!card) return;
+            card.querySelector('[data-team-edit-form]')?.classList.add('d-none');
+            card.querySelector('[data-team-view]')?.classList.remove('d-none');
+        }
+    });
+
+    document.addEventListener('submit', (e) => {
+        const form = e.target.closest('[data-team-edit-form]');
+        if (!form) return;
+
+        // En vista previa VS Code (sin backend) actualiza la píldora y su color al instante
+        const actionAttr = form.getAttribute('action');
+        if (!actionAttr || actionAttr === '#') {
+            e.preventDefault();
+            const card = form.closest('.team-member-card');
+            const select = form.querySelector('select[name="rol"]');
+            const badge = card?.querySelector('.role-badge');
+            if (badge && select) {
+                const newRole = select.value;
+                badge.textContent = newRole;
+                badge.className = 'role-badge ' + (roleClassMap[newRole] || '');
+            }
+            form.classList.add('d-none');
+            card?.querySelector('[data-team-view]')?.classList.remove('d-none');
+        }
+    });
+
+    /* 11. GESTIÓN DE FASES DEL RETO (estudiante/fases.html) */
+    document.addEventListener('click', (e) => {
+        const deleteBtn = e.target.closest('[data-phase-delete-btn]');
+        if (!deleteBtn) return;
+
+        const card = deleteBtn.closest('.phase-card');
+        if (!card) return;
+
+        const activeTasks = parseInt(card.getAttribute('data-active-tasks') || '0', 10);
+        if (activeTasks > 0) {
+            e.preventDefault();
+            const blockedModal = document.getElementById('modal-fase-bloqueada');
+            if (blockedModal) blockedModal.classList.remove('d-none');
+            return;
+        }
+
+        // En vista previa VS Code (sin backend) elimina la tarjeta con 0 tareas al instante
+        const form = deleteBtn.closest('form');
+        const actionAttr = form?.getAttribute('action');
+        if (!actionAttr || actionAttr === '#') {
+            e.preventDefault();
+            card.remove();
+        }
+    });
+
+    const newPhaseForm = document.getElementById('form-nueva-fase');
+    newPhaseForm?.addEventListener('submit', (e) => {
+        const actionAttr = newPhaseForm.getAttribute('action');
+        if (!actionAttr || actionAttr === '#') {
+            e.preventDefault();
+            const nombre = document.getElementById('nueva-fase-nombre')?.value.trim();
+            const orden = parseInt(document.getElementById('nueva-fase-orden')?.value || '0', 10);
+            const list = document.querySelector('.phases-list');
+            if (nombre && orden > 0 && list) {
+                const padded = orden < 10 ? `0${orden}` : `${orden}`;
+                const article = document.createElement('article');
+                article.className = 'phase-card';
+                article.setAttribute('data-active-tasks', '0');
+                article.innerHTML = `
+                    <div class="phase-card__info">
+                        <span class="phase-card__number">${padded}</span>
+                        <div>
+                            <h2 class="phase-card__title">${orden}. ${nombre}</h2>
+                            <p class="phase-card__count">0 TAREAS ACTIVAS</p>
+                        </div>
+                    </div>
+                    <form action="#" method="post" class="m-0">
+                        <button type="submit" class="phase-delete-btn" data-phase-delete-btn title="Eliminar fase" aria-label="Eliminar fase">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                `;
+                list.appendChild(article);
+            }
+            closeAllModals();
+        }
+    });
 });
