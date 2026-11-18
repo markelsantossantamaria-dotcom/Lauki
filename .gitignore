@@ -27,8 +27,6 @@ buildNumber.properties
 .project
 .classpath
 .settings/
-# Excepción: Conservar la configuración de codificación UTF-8 para autoconfiguración de Eclipse
-!.settings/org.eclipse.core.resources.prefs
 
 # Spring Tools 4 y configuración de beans
 .springBeans
