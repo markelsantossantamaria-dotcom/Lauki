@@ -1,10 +1,4 @@
 <!DOCTYPE html>
-<!-- =========================================================================
-     ARCHIVO: src/main/resources/templates/admin/cursos.html
-     ROL: ADMINISTRADOR
-     VISTA: Gestión de Cursos (Listado y Modal de Creación)
-     CONTROLADOR: AdminController.java -> @GetMapping("/admin/cursos") devuelve "admin/cursos"
-     ========================================================================= -->
 <html lang="es"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -15,12 +9,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Cursos - Lauki</title>
+    <title>Mi Tablero - Lauki</title>
 
-    <!-- =========================================================================
-         SOLO PARA VISTA PREVIA EN VS CODE (Live Server):
-         th:remove="all" hace que Spring Boot borre estas líneas al unir con layout.html.
-         ========================================================================= -->
+    <!-- Script anti-parpadeo (FOUC) para vista previa en VS Code Live Server (descartado por Thymeleaf) -->
     <script th:remove="all">
         (function () {
             const theme = localStorage.getItem('lauki-theme') || 'light';
@@ -31,6 +22,8 @@
             document.documentElement.setAttribute('data-sidebar', sidebar);
         })();
     </script>
+
+    <!-- Dependencias para vista previa directa en VS Code (descartadas en Spring Boot) -->
     <link th:remove="all" rel="preconnect" href="https://fonts.googleapis.com">
     <link th:remove="all" rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link th:remove="all" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
@@ -40,203 +33,836 @@
 </head>
 <body>
 
-    <!-- Contenedor de vista previa (th:remove="tag" lo elimina en Spring Boot dejando solo el fragmento) -->
-    <div class="admin" th:remove="tag">
+<div class="admin" th:remove="tag">
 
-        <!-- TOPBAR MÓVIL PARA VISTA PREVIA EN VS CODE (Descartado por Thymeleaf) -->
-        <header class="topbar" th:remove="all">
-            <button id="mobile-menu-toggle" class="icon-btn" type="button" aria-label="Abrir menú">
-                <i class="bi bi-list fs-4"></i>
-            </button>
-            <span class="font-display fw-bold fs-4" style="letter-spacing: -0.04em;">
-                Lauki<span style="color: var(--color-accent);">.</span>
-            </span>
-            <div style="width: 32px;"></div>
-        </header>
+    <!-- TOPBAR MÓVIL PARA VISTA PREVIA EN VS CODE (Descartado por Thymeleaf) -->
+    <header class="topbar" th:remove="all">
+        <button id="mobile-menu-toggle" class="icon-btn" type="button" aria-label="Abrir menú">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+        <span class="font-display fw-bold fs-4">Lauki<span style="color: var(--color-accent);">.</span></span>
+        <div style="width: 32px;"></div>
+    </header>
 
-        <div id="sidebar-backdrop" class="sidebar-backdrop d-none" th:remove="all"></div>
+    <div id="sidebar-backdrop" class="sidebar-backdrop d-none" th:remove="all"></div>
 
-        <!-- SIDEBAR ADMINISTRADOR PARA VISTA PREVIA EN VS CODE (Descartado por Thymeleaf) -->
-        <aside class="sidebar d-flex flex-column justify-content-between p-3" th:remove="all">
-            <div>
-                <div class="sidebar__header d-flex align-items-center gap-2 px-2 py-3 mb-3">
-                    <button class="icon-btn sidebar__toggle" type="button" data-sidebar-toggle aria-label="Colapsar menú">
-                        <i class="bi bi-list fs-5"></i>
-                    </button>
-                    <span class="sidebar__brand font-display fw-bold" style="font-size: 28px; letter-spacing: -0.04em; line-height: 1;">
-                        Lauki<span style="color: var(--color-accent);">.</span>
-                    </span>
-                </div>
-
-                <nav class="d-flex flex-column gap-1" aria-label="Navegación de administrador">
-                    <a href="./panel.html" class="sidebar__link" title="Inicio">
-                        <i class="bi bi-house"></i>
-                        <span>Inicio</span>
-                    </a>
-                    <a href="./cursos.html" class="sidebar__link sidebar__link--active" title="Cursos" aria-current="page">
-                        <i class="bi bi-book"></i>
-                        <span>Cursos</span>
-                    </a>
-                    <a href="./usuarios.html" class="sidebar__link" title="Usuarios">
-                        <i class="bi bi-people"></i>
-                        <span>Usuarios</span>
-                    </a>
-                    <a href="./grupos.html" class="sidebar__link" title="Grupos">
-                        <i class="bi bi-grid"></i>
-                        <span>Grupos</span>
-                    </a>
-                    <a href="./retos.html" class="sidebar__link" title="Retos">
-                        <i class="bi bi-flag"></i>
-                        <span>Retos</span>
-                    </a>
-                </nav>
-            </div>
-
-            <div class="sidebar__footer d-flex align-items-center justify-content-between pt-3 px-2" style="border-top: 1px solid var(--color-border-subtle);">
-                <button id="theme-toggle" class="theme-circle-btn" type="button" aria-label="Cambiar tema">
-                    <i class="bi bi-moon"></i>
+    <!-- SIDEBAR ESTUDIANTE PARA VISTA PREVIA EN VS CODE (Descartado por Thymeleaf) -->
+    <aside class="sidebar d-flex flex-column justify-content-between p-3" th:remove="all">
+        <div>
+            <div class="sidebar__header d-flex align-items-center gap-2 px-2 py-3 mb-3">
+                <button class="icon-btn sidebar__toggle" type="button" data-sidebar-toggle aria-label="Colapsar menú">
+                    <i class="bi bi-list fs-5"></i>
                 </button>
-                <div class="accent-group" role="group" aria-label="Color de acento">
-                    <button class="accent-swatch accent-swatch--magenta active" type="button" data-accent-option="magenta" aria-label="Acento magenta">
-                        <i class="bi bi-check"></i>
+                <span class="sidebar__brand font-display fw-bold" style="font-size: 28px; letter-spacing: -0.04em; line-height: 1;">
+                    Lauki<span style="color: var(--color-accent);">.</span>
+                </span>
+            </div>
+
+            <nav class="d-flex flex-column gap-1" aria-label="Navegación de estudiante">
+                <a href="./tablero.html" class="sidebar__link sidebar__link--active" title="Mi Tablero" aria-current="page">
+                    <i class="bi bi-kanban"></i>
+                    <span>Mi Tablero</span>
+                </a>
+                <a href="./equipo.html" class="sidebar__link" title="Mi Equipo">
+                    <i class="bi bi-people"></i>
+                    <span>Mi Equipo</span>
+                </a>
+                <a href="./fases.html" class="sidebar__link" title="Fases del Reto">
+                    <i class="bi bi-diagram-3"></i>
+                    <span>Fases del Reto</span>
+                </a>
+                <a href="./historial.html" class="sidebar__link" title="Historial">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Historial</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar__footer d-flex align-items-center justify-content-between pt-3 px-2" style="border-top: 1px solid var(--color-border-subtle);">
+            <button id="theme-toggle" class="theme-circle-btn" type="button" aria-label="Cambiar tema">
+                <i class="bi bi-moon"></i>
+            </button>
+            <div class="accent-group" role="group" aria-label="Color de acento">
+                <button class="accent-swatch accent-swatch--magenta active" type="button" data-accent-option="magenta" aria-label="Acento magenta">
+                    <i class="bi bi-check"></i>
+                </button>
+                <button class="accent-swatch accent-swatch--cyan" type="button" data-accent-option="cyan" aria-label="Acento cian">
+                    <i class="bi bi-check"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="admin__main" th:remove="tag">
+
+        <!-- MENÚ DE USUARIO SUPERIOR PARA VISTA PREVIA EN VS CODE (Descartado por Thymeleaf) -->
+        <div class="d-flex justify-content-end mb-3" th:remove="all">
+            <div class="dropdown">
+                <button class="user-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="avatar">MR</span>
+                    <span style="font-size: 13px; font-weight: 500;">Marta Ruiz</span>
+                    <i class="bi bi-chevron-down" style="font-size: 11px; color: var(--color-text-secondary);"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="background-color: var(--color-bg-surface); border-color: var(--color-border-subtle); border-radius: 10px; min-width: 200px;">
+                    <li class="px-3 py-2">
+                        <div style="font-size: 13px; font-weight: 600; color: var(--color-text-primary);">Marta Ruiz</div>
+                        <div style="font-size: 12px; color: var(--color-text-secondary);">marta.ruiz@lauki.edu</div>
+                    </li>
+                    <li><hr class="dropdown-divider" style="border-color: var(--color-border-subtle);"></li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2" href="../login.html" style="font-size: 13px; color: var(--color-error);">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- =====================================================================
+             FRAGMENTO THYMELEAF REAL INYECTADO EN layout.html
+             ===================================================================== -->
+        <div layout:fragment="content">
+
+            <!-- CONTENEDOR DE TOASTS DE FEEDBACK (Mensajes flash o errores de arrastre) -->
+            <div id="lauki-toast-container" aria-live="polite">
+                <!-- BACKEND (TableroController.java): Mensajes Flash tras RedirectAttributes (ocultos en VS Code con th:remove="all") -->
+                <div th:if="${toastExito != null}" th:remove="all" class="toast-lauki toast-lauki--success" role="status">
+                    <i class="bi bi-check-circle-fill" style="color: var(--color-success); font-size: 16px;"></i>
+                    <span th:text="${toastExito}">Cambios guardados</span>
+                    <button type="button" class="icon-btn ms-auto" onclick="this.parentElement.remove()" aria-label="Cerrar aviso">
+                        <i class="bi bi-x-lg" style="font-size: 12px;"></i>
                     </button>
-                    <button class="accent-swatch accent-swatch--cyan" type="button" data-accent-option="cyan" aria-label="Acento cian">
-                        <i class="bi bi-check"></i>
+                </div>
+                <div th:if="${toastError != null}" th:remove="all" class="toast-lauki toast-lauki--error" role="alert">
+                    <i class="bi bi-exclamation-circle-fill" style="color: var(--color-error); font-size: 16px;"></i>
+                    <span th:text="${toastError}">Error al mover la tarea</span>
+                    <button type="button" class="icon-btn ms-auto" onclick="this.parentElement.remove()" aria-label="Cerrar aviso">
+                        <i class="bi bi-x-lg" style="font-size: 12px;"></i>
                     </button>
                 </div>
             </div>
-        </aside>
 
-        <!-- CONTENIDO PRINCIPAL -->
-        <main class="admin__main" th:remove="tag">
-
-            <!-- MENÚ DE USUARIO SUPERIOR PARA VISTA PREVIA EN VS CODE (Descartado por Thymeleaf) -->
-            <div class="d-flex justify-content-end mb-3" th:remove="all">
-                <div class="dropdown">
-                    <button class="user-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span class="avatar">MR</span>
-                        <span style="font-size: 13px; font-weight: 500;">Marta Ruiz</span>
-                        <i class="bi bi-chevron-down" style="font-size: 11px; color: var(--color-text-secondary);"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="background-color: var(--color-bg-surface); border-color: var(--color-border-subtle); border-radius: 10px; min-width: 200px;">
-                        <li class="px-3 py-2">
-                            <div style="font-size: 13px; font-weight: 600; color: var(--color-text-primary);">Marta Ruiz</div>
-                            <div style="font-size: 12px; color: var(--color-text-secondary);">marta.ruiz@lauki.edu</div>
-                        </li>
-                        <li><hr class="dropdown-divider" style="border-color: var(--color-border-subtle);"></li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center gap-2" href="../login.html" style="font-size: 13px; color: var(--color-error);">
-                                <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-                            </a>
-                        </li>
-                    </ul>
+            <!-- CABECERA DE PÁGINA + FILTRO DE FASE + NUEVA TAREA -->
+            <header class="page-header board-header mb-4">
+                <div>
+                    <p class="font-mono text-uppercase mb-1" style="font-size: 11px; letter-spacing: 0.08em; color: var(--color-text-secondary);">
+                        ESTUDIANTE
+                    </p>
+                    <h1 class="font-display fw-bold m-0" style="font-size: 32px; letter-spacing: -0.02em; color: var(--color-text-primary);">
+                        Mi Tablero
+                    </h1>
                 </div>
-            </div>
 
-            <!-- =========================================================================
-                 BLOQUE REAL QUE SPRING BOOT INYECTA EN layout.html
-                 ========================================================================= -->
-            <div layout:fragment="content">
-
-                <!-- Cabecera con título a la izquierda y botón + Nuevo Curso a la derecha -->
-                <header class="page-header d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
-                    <div>
-                        <p class="font-mono text-uppercase m-0" style="color: var(--color-text-secondary); font-size: 12px; letter-spacing: 0.05em;">
-                            Administración
-                        </p>
-                        <h1 class="font-display fw-bold mt-1 mb-0" style="font-size: 32px;">
-                            Gestión de Cursos
-                        </h1>
+                <div class="board-actions">
+                    <!-- Filtro de Fase -->
+                    <div class="board-filter">
+                        <label for="filtro-fase-select" class="board-filter__label">Fase</label>
+                        <div class="lauki-select lauki-select--down" data-custom-select data-board-phase-filter>
+                            <!-- BACKEND (TableroController.java):
+                                 Model attribute 'fases' (List<Fase>) del reto activo del equipo.
+                                 El JS filtra al instante en cliente por data-fase-id -->
+                            <select id="filtro-fase-select" name="faseId" class="d-none" aria-label="Filtrar por fase">
+                                <option value="todas" selected>Todas las fases</option>
+                                <option th:each="fase : ${fases}"
+                                        th:value="${fase.id}"
+                                        th:text="${fase.numeroOrden + '. ' + fase.nombre}">1. Análisis</option>
+                                <option th:remove="all" value="2">2. Diseño</option>
+                            </select>
+                            <button type="button" class="lauki-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                                <span class="lauki-select__value">Todas las fases</span>
+                                <i class="bi bi-chevron-down lauki-select__arrow"></i>
+                            </button>
+                            <ul class="lauki-select__menu d-none" role="listbox"></ul>
+                        </div>
                     </div>
 
-                    <button type="button" class="btn--primary" data-modal-open="modal-nuevo-curso">
-                        <i class="bi bi-plus-lg"></i>
-                        <span>Nuevo Curso</span>
-                    </button>
-                </header>
+                    <!-- Botón + Nueva Tarea -->
+                    <div class="board-actions__cta">
+                        <button type="button" class="btn--primary" data-modal-open="modal-nueva-tarea">
+                            <i class="bi bi-plus-lg"></i>
+                            <span>Nueva Tarea</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
 
-                <!-- =========================================================================
-                     BACKEND (AdminController.java & Curso.java): TABLA DE CURSOS
-                     - En el <tbody>, iterad sobre la lista de cursos enviada desde el modelo
-                       (ej. th:each="curso : ${cursos}").
-                     - Sustituid el nombre con th:text="${curso.nombre}" y el total de alumnos
-                       con th:text="${#lists.size(curso.usuarios)}" (o el contador de vuestro DTO).
-                     - Las filas estáticas siguientes sirven de ejemplo visual para VS Code;
-                       cuando conectéis th:each podéis dejar una sola <tr> dinámica.
-                     ========================================================================= -->
-                <section class="table-card" aria-label="Listado de cursos">
-                    <table class="lauki-table">
-                        <thead>
-                            <tr>
-                                <th>Curso</th>
-                                <th class="text-end">Alumnos</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Ejemplo fila 1 (BACKEND: reemplazar por th:each="curso : ${cursos}") -->
-                            <tr>
-                                <td class="fw-semibold">1º DAW</td>
-                                <td class="text-end">2</td>
-                            </tr>
-                            <!-- Ejemplo fila 2 (eliminar al poner th:each) -->
-                            <tr>
-                                <td class="fw-semibold">2º DAW</td>
-                                <td class="text-end">1</td>
-                            </tr>
-                            <!-- Ejemplo fila 3 (eliminar al poner th:each) -->
-                            <tr>
-                                <td class="fw-semibold">1º DAM</td>
-                                <td class="text-end">1</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </section>
+            <!-- =================================================================
+                 TABLERO KANBAN (5 Columnas: Pendiente, En Progreso, En Supervisión, Completada, Bloqueada)
+                 BACKEND (TableroController.java):
+                 - Pasará al modelo las listas de tareas por estado:
+                   'tareasPendientes', 'tareasEnProgreso', 'tareasEnSupervision', 'tareasCompletadas', 'tareasBloqueadas'
+                 - Cada Tarea expone: id, titulo, descripcion, estado, fechaCreacion, motivoBloqueo,
+                   fase (id, numeroOrden, nombre), responsable (id, nombreCompleto, iniciales), totalComentarios
+                 - Endpoint AJAX/Fetch al soltar tarjeta: POST /estudiante/tareas/{id}/mover (body: estado)
+                 ================================================================= -->
+            <section class="kanban--board"
+                     aria-label="Tablero Kanban de tareas"
+                     th:attr="data-move-url=@{/estudiante/tareas}">
 
-                <!-- =========================================================================
-                     MODAL: NUEVO CURSO
-                     BACKEND (AdminController.java & Curso.java):
-                     - Añadir th:action="@{/admin/cursos}" (ajustar al @PostMapping correspondiente).
-                     - Verificar que name="nombre" coincide con el atributo de Curso.java o DTO.
-                     ========================================================================= -->
-                <div class="modal-overlay d-none" id="modal-nuevo-curso" role="dialog" aria-modal="true" aria-labelledby="modal-curso-title">
-                    <div class="modal-card">
-                        <div class="modal-card__header">
-                            <h2 id="modal-curso-title" class="modal-card__title">Nuevo Curso</h2>
-                            <button type="button" class="icon-btn" data-modal-close aria-label="Cerrar modal">
-                                <i class="bi bi-x-lg"></i>
-                            </button>
+                <!-- COLUMNA 1: PENDIENTE -->
+                <div class="kanban__column kanban__column--pendiente" data-column-status="PENDIENTE">
+                    <div class="kanban__column-header">
+                        <h2 class="kanban__column-title">Pendiente</h2>
+                        <span class="kanban__column-count"
+                              th:text="${tareasPendientes != null ? #lists.size(tareasPendientes) : 1}">1</span>
+                    </div>
+
+                    <div class="kanban__cards kanban__cards--scroll">
+                        <!-- BACKEND: Iteración real sobre tareasPendientes -->
+                        <article class="task-card"
+                                 draggable="true"
+                                 th:each="tarea : ${tareasPendientes}"
+                                 th:attr="data-task-id=${tarea.id},
+                                          data-task-titulo=${tarea.titulo},
+                                          data-task-descripcion=${tarea.descripcion},
+                                          data-task-fase-id=${tarea.fase.id},
+                                          data-task-fase-label=${'FASE ' + tarea.fase.numeroOrden + ' · ' + #strings.toUpperCase(tarea.fase.nombre)},
+                                          data-task-responsable-id=${tarea.responsable != null ? tarea.responsable.id : ''},
+                                          data-task-status='PENDIENTE',
+                                          data-has-responsable=${tarea.responsable != null}">
+                            <h3 class="task-card__title-wrap">
+                                <button type="button" class="task-card__title-btn" data-open-edit-task>
+                                    <span th:text="${tarea.titulo}">Documentar requisitos</span>
+                                </button>
+                            </h3>
+
+                            <div class="task-card__meta">
+                                <span class="task-card__phase"
+                                      th:text="${'FASE ' + tarea.fase.numeroOrden + ' · ' + #strings.toUpperCase(tarea.fase.nombre)}">
+                                    FASE 1 · ANÁLISIS
+                                </span>
+                                <span class="task-card__date"
+                                      th:text="${#temporals.format(tarea.fechaCreacion, 'yyyy-MM-dd')}">
+                                    2024-09-03
+                                </span>
+                            </div>
+
+                            <div class="task-card__footer">
+                                <div class="task-card__indicators">
+                                    <button type="button"
+                                            class="task-card__icon-btn"
+                                            th:classappend="${tarea.descripcion != null and !#strings.isEmpty(tarea.descripcion)} ? 'is-filled' : ''"
+                                            data-open-desc-task
+                                            aria-label="Ver o editar descripción">
+                                        <i class="bi bi-file-text"></i>
+                                    </button>
+                                    <button type="button"
+                                            class="task-card__icon-btn"
+                                            th:classappend="${tarea.totalComentarios != null and tarea.totalComentarios > 0} ? 'is-filled' : ''"
+                                            data-open-comments-task
+                                            aria-label="Ver comentarios">
+                                        <i class="bi bi-chat-left"></i>
+                                        <span th:if="${tarea.totalComentarios != null and tarea.totalComentarios > 0}"
+                                              th:text="${tarea.totalComentarios}">0</span>
+                                    </button>
+                                </div>
+
+                                <span th:if="${tarea.responsable != null}"
+                                      class="task-card__avatar"
+                                      role="img"
+                                      th:title="${tarea.responsable.nombreCompleto}"
+                                      th:attr="aria-label=${tarea.responsable.nombreCompleto}"
+                                      th:text="${tarea.responsable.iniciales}">MR</span>
+
+                                <span th:if="${tarea.responsable == null}"
+                                      class="task-card__avatar task-card__avatar--unassigned"
+                                      role="img"
+                                      title="Sin responsable: asígnalo para mover la tarea"
+                                      aria-label="Sin responsable">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                </span>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <!-- COLUMNA 2: EN PROGRESO -->
+                <div class="kanban__column kanban__column--progreso" data-column-status="EN_PROGRESO">
+                    <div class="kanban__column-header">
+                        <h2 class="kanban__column-title">En Progreso</h2>
+                        <span class="kanban__column-count"
+                              th:text="${tareasEnProgreso != null ? #lists.size(tareasEnProgreso) : 1}">1</span>
+                    </div>
+
+                    <div class="kanban__cards kanban__cards--scroll">
+                        <article class="task-card task-card--progreso"
+                                 draggable="true"
+                                 th:each="tarea : ${tareasEnProgreso}"
+                                 th:attr="data-task-id=${tarea.id},
+                                          data-task-titulo=${tarea.titulo},
+                                          data-task-descripcion=${tarea.descripcion},
+                                          data-task-fase-id=${tarea.fase.id},
+                                          data-task-fase-label=${'FASE ' + tarea.fase.numeroOrden + ' · ' + #strings.toUpperCase(tarea.fase.nombre)},
+                                          data-task-responsable-id=${tarea.responsable != null ? tarea.responsable.id : ''},
+                                          data-task-status='EN_PROGRESO',
+                                          data-has-responsable=${tarea.responsable != null}">
+                            <h3 class="task-card__title-wrap">
+                                <button type="button" class="task-card__title-btn" data-open-edit-task>
+                                    <span th:text="${tarea.titulo}">Entrevistas a usuarios</span>
+                                </button>
+                            </h3>
+
+                            <div class="task-card__meta">
+                                <span class="task-card__phase"
+                                      th:text="${'FASE ' + tarea.fase.numeroOrden + ' · ' + #strings.toUpperCase(tarea.fase.nombre)}">
+                                    FASE 1 · ANÁLISIS
+                                </span>
+                                <span class="task-card__date"
+                                      th:text="${#temporals.format(tarea.fechaCreacion, 'yyyy-MM-dd')}">
+                                    2024-09-02
+                                </span>
+                            </div>
+
+                            <div class="task-card__footer">
+                                <div class="task-card__indicators">
+                                    <button type="button"
+                                            class="task-card__icon-btn"
+                                            th:classappend="${tarea.descripcion != null and !#strings.isEmpty(tarea.descripcion)} ? 'is-filled' : ''"
+                                            data-open-desc-task
+                                            aria-label="Ver o editar descripción">
+                                        <i class="bi bi-file-text"></i>
+                                    </button>
+                                    <button type="button"
+                                            class="task-card__icon-btn"
+                                            th:classappend="${tarea.totalComentarios != null and tarea.totalComentarios > 0} ? 'is-filled' : ''"
+                                            data-open-comments-task
+                                            aria-label="Ver comentarios">
+                                        <i class="bi bi-chat-left"></i>
+                                        <span th:if="${tarea.totalComentarios != null and tarea.totalComentarios > 0}"
+                                              th:text="${tarea.totalComentarios}">0</span>
+                                    </button>
+                                </div>
+
+                                <span th:if="${tarea.responsable != null}"
+                                      class="task-card__avatar"
+                                      role="img"
+                                      th:title="${tarea.responsable.nombreCompleto}"
+                                      th:attr="aria-label=${tarea.responsable.nombreCompleto}"
+                                      th:text="${tarea.responsable.iniciales}">MR</span>
+
+                                <span th:if="${tarea.responsable == null}"
+                                      class="task-card__avatar task-card__avatar--unassigned"
+                                      role="img"
+                                      title="Sin responsable: asígnalo para mover la tarea"
+                                      aria-label="Sin responsable">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                </span>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <!-- COLUMNA 3: EN SUPERVISIÓN -->
+                <div class="kanban__column kanban__column--supervision" data-column-status="EN_REVISION">
+                    <div class="kanban__column-header">
+                        <h2 class="kanban__column-title">En Supervisión</h2>
+                        <span class="kanban__column-count"
+                              th:text="${tareasEnSupervision != null ? #lists.size(tareasEnSupervision) : 0}">0</span>
+                    </div>
+
+                    <div class="kanban__cards kanban__cards--scroll">
+                        <article class="task-card task-card--supervision"
+                                 draggable="true"
+                                 th:each="tarea : ${tareasEnSupervision}"
+                                 th:if="${tareasEnSupervision != null}"
+                                 th:attr="data-task-id=${tarea.id},
+                                          data-task-titulo=${tarea.titulo},
+                                          data-task-descripcion=${tarea.descripcion},
+                                          data-task-fase-id=${tarea.fase.id},
+                                          data-task-fase-label=${'FASE ' + tarea.fase.numeroOrden + ' · ' + #strings.toUpperCase(tarea.fase.nombre)},
+                                          data-task-responsable-id=${tarea.responsable != null ? tarea.responsable.id : ''},
+                                          data-task-status='EN_REVISION',
+                                          data-has-responsable=${tarea.responsable != null}">
+                            <h3 class="task-card__title-wrap">
+                                <button type="button" class="task-card__title-btn" data-open-edit-task>
+                                    <span th:text="${tarea.titulo}">Título tarea</span>
+                                </button>
+                            </h3>
+                            <div class="task-card__meta">
+                                <span class="task-card__phase"
+                                      th:text="${'FASE ' + tarea.fase.numeroOrden + ' · ' + #strings.toUpperCase(tarea.fase.nombre)}">
+                                    FASE 1 · ANÁLISIS
+                                </span>
+                                <span class="task-card__date"
+                                      th:text="${#temporals.format(tarea.fechaCreacion, 'yyyy-MM-dd')}">
+                                    2024-09-04
+                                </span>
+                            </div>
+                            <div class="task-card__footer">
+                                <div class="task-card__indicators">
+                                    <button type="button"
+                                            class="task-card__icon-btn"
+                                            th:classappend="${tarea.descripcion != null and !#strings.isEmpty(tarea.descripcion)} ? 'is-filled' : ''"
+                                            data-open-desc-task
+                                            aria-label="Ver o editar descripción">
+                                        <i class="bi bi-file-text"></i>
+                                    </button>
+                                    <button type="button"
+                                            class="task-card__icon-btn"
+                                            th:classappend="${tarea.totalComentarios != null and tarea.totalComentarios > 0} ? 'is-filled' : ''"
+                                            data-open-comments-task
+                                            aria-label="Ver comentarios">
+                                        <i class="bi bi-chat-left"></i>
+                                        <span th:if="${tarea.totalComentarios != null and tarea.totalComentarios > 0}"
+                                              th:text="${tarea.totalComentarios}">0</span>
+                                    </button>
+                                </div>
+                                <span th:if="${tarea.responsable != null}"
+                                      class="task-card__avatar"
+                                      role="img"
+                                      th:title="${tarea.responsable.nombreCompleto}"
+                                      th:attr="aria-label=${tarea.responsable.nombreCompleto}"
+                                      th:text="${tarea.responsable.iniciales}">MR</span>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <!-- COLUMNA 4: COMPLETADA -->
+                <div class="kanban__column kanban__column--completada" data-column-status="COMPLETADA">
+                    <div class="kanban__column-header">
+                        <h2 class="kanban__column-title">Completada</h2>
+                        <span class="kanban__column-count"
+                              th:text="${tareasCompletadas != null ? #lists.size(tareasCompletadas) : 0}">0</span>
+                    </div>
+
+                    <div class="kanban__cards kanban__cards--scroll">
+                        <article class="task-card task-card--completada"
+                                 draggable="true"
+                                 th:each="tarea : ${tareasCompletadas}"
+                                 th:if="${tareasCompletadas != null}"
+                                 th:attr="data-task-id=${tarea.id},
+                                          data-task-titulo=${tarea.titulo},
+                                          data-task-descripcion=${tarea.descripcion},
+                                          data-task-fase-id=${tarea.fase.id},
+                                          data-task-fase-label=${'FASE ' + tarea.fase.numeroOrden + ' · ' + #strings.toUpperCase(tarea.fase.nombre)},
+                                          data-task-responsable-id=${tarea.responsable != null ? tarea.responsable.id : ''},
+                                          data-task-status='COMPLETADA',
+                                          data-has-responsable=${tarea.responsable != null}">
+                            <h3 class="task-card__title-wrap">
+                                <button type="button" class="task-card__title-btn" data-open-edit-task>
+                                    <span th:text="${tarea.titulo}">Título tarea</span>
+                                </button>
+                            </h3>
+                            <div class="task-card__meta">
+                                <span class="task-card__phase"
+                                      th:text="${'FASE ' + tarea.fase.numeroOrden + ' · ' + #strings.toUpperCase(tarea.fase.nombre)}">
+                                    FASE 1 · ANÁLISIS
+                                </span>
+                                <span class="task-card__date"
+                                      th:text="${#temporals.format(tarea.fechaCreacion, 'yyyy-MM-dd')}">
+                                    2024-09-01
+                                </span>
+                            </div>
+                            <div class="task-card__footer">
+                                <div class="task-card__indicators">
+                                    <button type="button"
+                                            class="task-card__icon-btn"
+                                            th:classappend="${tarea.descripcion != null and !#strings.isEmpty(tarea.descripcion)} ? 'is-filled' : ''"
+                                            data-open-desc-task
+                                            aria-label="Ver o editar descripción">
+                                        <i class="bi bi-file-text"></i>
+                                    </button>
+                                    <button type="button"
+                                            class="task-card__icon-btn"
+                                            th:classappend="${tarea.totalComentarios != null and tarea.totalComentarios > 0} ? 'is-filled' : ''"
+                                            data-open-comments-task
+                                            aria-label="Ver comentarios">
+                                        <i class="bi bi-chat-left"></i>
+                                        <span th:if="${tarea.totalComentarios != null and tarea.totalComentarios > 0}"
+                                              th:text="${tarea.totalComentarios}">0</span>
+                                    </button>
+                                </div>
+                                <span th:if="${tarea.responsable != null}"
+                                      class="task-card__avatar"
+                                      role="img"
+                                      th:title="${tarea.responsable.nombreCompleto}"
+                                      th:attr="aria-label=${tarea.responsable.nombreCompleto}"
+                                      th:text="${tarea.responsable.iniciales}">MR</span>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <!-- COLUMNA 5: BLOQUEADA -->
+                <div class="kanban__column kanban__column--bloqueada" data-column-status="BLOQUEADA">
+                    <div class="kanban__column-header">
+                        <h2 class="kanban__column-title">Bloqueada</h2>
+                        <span class="kanban__column-count"
+                              th:text="${tareasBloqueadas != null ? #lists.size(tareasBloqueadas) : 0}">0</span>
+                    </div>
+
+                    <div class="kanban__cards kanban__cards--scroll">
+                        <article class="task-card task-card--bloqueada"
+                                 draggable="true"
+                                 th:each="tarea : ${tareasBloqueadas}"
+                                 th:if="${tareasBloqueadas != null}"
+                                 th:attr="data-task-id=${tarea.id},
+                                          data-task-titulo=${tarea.titulo},
+                                          data-task-descripcion=${tarea.descripcion},
+                                          data-task-fase-id=${tarea.fase.id},
+                                          data-task-fase-label=${'FASE ' + tarea.fase.numeroOrden + ' · ' + #strings.toUpperCase(tarea.fase.nombre)},
+                                          data-task-responsable-id=${tarea.responsable != null ? tarea.responsable.id : ''},
+                                          data-task-status='BLOQUEADA',
+                                          data-has-responsable=${tarea.responsable != null}">
+                            <h3 class="task-card__title-wrap">
+                                <button type="button" class="task-card__title-btn" data-open-edit-task>
+                                    <span th:text="${tarea.titulo}">Título tarea</span>
+                                </button>
+                            </h3>
+                            <div class="task-card__meta">
+                                <span class="task-card__phase"
+                                      th:text="${'FASE ' + tarea.fase.numeroOrden + ' · ' + #strings.toUpperCase(tarea.fase.nombre)}">
+                                    FASE 1 · ANÁLISIS
+                                </span>
+                                <span class="task-card__date"
+                                      th:text="${#temporals.format(tarea.fechaCreacion, 'yyyy-MM-dd')}">
+                                    2024-09-05
+                                </span>
+                            </div>
+
+                            <div class="task-card__block-reason"
+                                 th:if="${tarea.motivoBloqueo != null and !#strings.isEmpty(tarea.motivoBloqueo)}">
+                                <i class="bi bi-lock-fill"></i>
+                                <span th:text="${tarea.motivoBloqueo}">Motivo del bloqueo</span>
+                            </div>
+
+                            <div class="task-card__footer">
+                                <div class="task-card__indicators">
+                                    <button type="button"
+                                            class="task-card__icon-btn"
+                                            th:classappend="${tarea.descripcion != null and !#strings.isEmpty(tarea.descripcion)} ? 'is-filled' : ''"
+                                            data-open-desc-task
+                                            aria-label="Ver o editar descripción">
+                                        <i class="bi bi-file-text"></i>
+                                    </button>
+                                    <button type="button"
+                                            class="task-card__icon-btn"
+                                            th:classappend="${tarea.totalComentarios != null and tarea.totalComentarios > 0} ? 'is-filled' : ''"
+                                            data-open-comments-task
+                                            aria-label="Ver comentarios">
+                                        <i class="bi bi-chat-left"></i>
+                                        <span th:if="${tarea.totalComentarios != null and tarea.totalComentarios > 0}"
+                                              th:text="${tarea.totalComentarios}">0</span>
+                                    </button>
+                                </div>
+                                <span th:if="${tarea.responsable != null}"
+                                      class="task-card__avatar"
+                                      role="img"
+                                      th:title="${tarea.responsable.nombreCompleto}"
+                                      th:attr="aria-label=${tarea.responsable.nombreCompleto}"
+                                      th:text="${tarea.responsable.iniciales}">MR</span>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- =================================================================
+                 MODAL 1: NUEVA TAREA
+                 BACKEND (TableroController.java):
+                 - @PostMapping("/estudiante/tareas/crear")
+                 - Parámetros / DTO: titulo (String, obligatorio), descripcion (String),
+                   faseId (Long, obligatorio), responsableId (Long, opcional/nullable)
+                 ================================================================= -->
+            <div id="modal-nueva-tarea" class="modal-overlay d-none" role="dialog" aria-modal="true" aria-labelledby="modal-nueva-tarea-title">
+                <div class="modal-card" style="max-width: 480px;">
+                    <div class="modal-card__header">
+                        <h2 id="modal-nueva-tarea-title" class="modal-card__title">Nueva Tarea</h2>
+                        <button type="button" class="icon-btn" data-modal-close aria-label="Cerrar modal">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    <form th:action="@{/estudiante/tareas/crear}" method="post">
+                        <div class="mb-3">
+                            <label for="nueva-tarea-titulo" class="login-label">Título</label>
+                            <input type="text"
+                                   id="nueva-tarea-titulo"
+                                   name="titulo"
+                                   class="pill-input pill-input--plain"
+                                   required>
                         </div>
 
-                        <form action="#" th:action="@{/admin/cursos}" method="post">
-                            <div class="mb-4">
-                                <label for="nombre-curso" class="login-label">Nombre del curso</label>
-                                <input type="text"
-                                       id="nombre-curso"
-                                       name="nombre"
-                                       class="pill-input pill-input--plain"
-                                       placeholder="Ej. 2º DAM"
-                                       required>
-                            </div>
+                        <div class="mb-3">
+                            <label for="nueva-tarea-descripcion" class="login-label">Descripción</label>
+                            <textarea id="nueva-tarea-descripcion"
+                                      name="descripcion"
+                                      class="lauki-textarea"
+                                      rows="3"></textarea>
+                        </div>
 
-                            <div class="modal-card__footer">
-                                <button type="button" class="btn--ghost" data-modal-close>
-                                    Cancelar
+                        <div class="mb-3">
+                            <label for="nueva-tarea-fase" class="login-label">Fase</label>
+                            <div class="lauki-select" data-custom-select>
+                                <select id="nueva-tarea-fase" name="faseId" class="d-none" required>
+                                    <option value="" disabled selected>Selecciona una fase</option>
+                                    <option th:each="fase : ${fases}"
+                                            th:value="${fase.id}"
+                                            th:text="${fase.numeroOrden + '. ' + fase.nombre}">1. Análisis</option>
+                                    <option th:remove="all" value="2">2. Diseño</option>
+                                </select>
+                                <button type="button" class="lauki-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                                    <span class="lauki-select__value is-placeholder">Selecciona una fase</span>
+                                    <i class="bi bi-chevron-down lauki-select__arrow"></i>
                                 </button>
-                                <button type="submit" class="btn--primary">
-                                    Guardar
-                                </button>
+                                <ul class="lauki-select__menu d-none" role="listbox"></ul>
                             </div>
-                        </form>
-                    </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="nueva-tarea-responsable" class="login-label">Responsable</label>
+                            <div class="responsable-select-row">
+                                <span class="task-card__avatar task-card__avatar--unassigned"
+                                      data-responsable-preview="nueva-tarea-responsable"
+                                      role="img"
+                                      aria-label="Estado de responsable">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                </span>
+                                <div class="lauki-select" data-custom-select>
+                                    <!-- BACKEND: Model attribute 'miembrosEquipo' (List<Usuario> del grupo) -->
+                                    <select id="nueva-tarea-responsable" name="responsableId" class="d-none">
+                                        <option value="" selected>Sin responsable</option>
+                                        <option th:each="miembro : ${miembrosEquipo}"
+                                                th:value="${miembro.id}"
+                                                th:text="${miembro.nombreCompleto}">Marta Ruiz</option>
+                                        <option th:remove="all" value="2">Pablo Gómez</option>
+                                        <option th:remove="all" value="3">Lucía Torres</option>
+                                        <option th:remove="all" value="4">Diego Marín</option>
+                                    </select>
+                                    <button type="button" class="lauki-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="lauki-select__value">Sin responsable</span>
+                                        <i class="bi bi-chevron-down lauki-select__arrow"></i>
+                                    </button>
+                                    <ul class="lauki-select__menu d-none" role="listbox"></ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-card__footer">
+                            <button type="button" class="btn--ghost" data-modal-close>Cancelar</button>
+                            <button type="submit" class="btn--primary">Crear tarea</button>
+                        </div>
+                    </form>
                 </div>
-
             </div>
 
-        </main>
-    </div>
+            <!-- =================================================================
+                 MODAL 2: EDITAR TAREA (Con botón Eliminar Tarea y Guardar Cambios)
+                 BACKEND (TableroController.java):
+                 - Actualizar: @PostMapping("/estudiante/tareas/editar") -> id, titulo, faseId, responsableId
+                 - Soft Delete: @PostMapping("/estudiante/tareas/eliminar") -> id
+                 ================================================================= -->
+            <div id="modal-editar-tarea" class="modal-overlay d-none" role="dialog" aria-modal="true" aria-labelledby="modal-editar-tarea-title">
+                <div class="modal-card" style="max-width: 480px;">
+                    <div class="modal-card__header">
+                        <h2 id="modal-editar-tarea-title" class="modal-card__title">Editar tarea</h2>
+                        <button type="button" class="icon-btn" data-modal-close aria-label="Cerrar modal">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
 
-    <!-- Scripts (Solo vista previa VS Code) -->
-    <script th:remove="all" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script th:remove="all" src="../../static/js/main.js"></script>
+                    <form id="form-editar-tarea" th:action="@{/estudiante/tareas/editar}" method="post">
+                        <input type="hidden" id="edit-tarea-id" name="id">
+
+                        <div class="mb-3">
+                            <label for="edit-tarea-titulo" class="login-label">Título</label>
+                            <input type="text"
+                                   id="edit-tarea-titulo"
+                                   name="titulo"
+                                   class="pill-input pill-input--plain"
+                                   required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="edit-tarea-fase" class="login-label">Fase</label>
+                            <div class="lauki-select" data-custom-select>
+                                <select id="edit-tarea-fase" name="faseId" class="d-none" required>
+                                    <option th:each="fase : ${fases}"
+                                            th:value="${fase.id}"
+                                            th:text="${fase.numeroOrden + '. ' + fase.nombre}">1. Análisis</option>
+                                    <option th:remove="all" value="2">2. Diseño</option>
+                                </select>
+                                <button type="button" class="lauki-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                                    <span class="lauki-select__value">1. Análisis</span>
+                                    <i class="bi bi-chevron-down lauki-select__arrow"></i>
+                                </button>
+                                <ul class="lauki-select__menu d-none" role="listbox"></ul>
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="edit-tarea-responsable" class="login-label">Responsable</label>
+                            <div class="responsable-select-row">
+                                <span class="task-card__avatar task-card__avatar--unassigned"
+                                      data-responsable-preview="edit-tarea-responsable"
+                                      role="img"
+                                      aria-label="Estado de responsable">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                </span>
+                                <div class="lauki-select" data-custom-select>
+                                    <select id="edit-tarea-responsable" name="responsableId" class="d-none">
+                                        <option value="">Sin responsable</option>
+                                        <option th:each="miembro : ${miembrosEquipo}"
+                                                th:value="${miembro.id}"
+                                                th:text="${miembro.nombreCompleto}">Marta Ruiz</option>
+                                        <option th:remove="all" value="2">Pablo Gómez</option>
+                                        <option th:remove="all" value="3">Lucía Torres</option>
+                                        <option th:remove="all" value="4">Diego Marín</option>
+                                    </select>
+                                    <button type="button" class="lauki-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="lauki-select__value">Sin responsable</span>
+                                        <i class="bi bi-chevron-down lauki-select__arrow"></i>
+                                    </button>
+                                    <ul class="lauki-select__menu d-none" role="listbox"></ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-card__footer justify-content-between">
+                            <button type="submit"
+                                    class="btn--danger"
+                                    formaction="/estudiante/tareas/eliminar"
+                                    th:formaction="@{/estudiante/tareas/eliminar}">
+                                Eliminar Tarea
+                            </button>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="submit" class="btn--primary">Guardar Cambios</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- =================================================================
+                 MODAL 3: DESCRIPCIÓN DE TAREA (Icono documento en tarjeta)
+                 BACKEND (TableroController.java):
+                 - @PostMapping("/estudiante/tareas/descripcion") -> id, descripcion
+                 ================================================================= -->
+            <div id="modal-descripcion-tarea" class="modal-overlay d-none" role="dialog" aria-modal="true" aria-labelledby="modal-desc-tarea-title">
+                <div class="modal-card" style="max-width: 480px;">
+                    <div class="modal-card__header">
+                        <div>
+                            <p id="desc-tarea-subtitle" class="font-mono text-uppercase m-0 mb-1" style="font-size: 11px; color: var(--color-accent);">
+                                FASE 1 · ANÁLISIS
+                            </p>
+                            <h2 id="modal-desc-tarea-title" class="modal-card__title">Descripción de la tarea</h2>
+                        </div>
+                        <button type="button" class="icon-btn" data-modal-close aria-label="Cerrar modal">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    <form th:action="@{/estudiante/tareas/descripcion}" method="post">
+                        <input type="hidden" id="desc-tarea-id" name="id">
+
+                        <div class="mb-2">
+                            <label for="desc-tarea-texto" class="login-label">Detalle o criterios de aceptación</label>
+                            <textarea id="desc-tarea-texto"
+                                      name="descripcion"
+                                      class="lauki-textarea"
+                                      rows="5"
+                                      placeholder="Escribe aquí la descripción de la tarea..."></textarea>
+                        </div>
+
+                        <div class="modal-card__footer">
+                            <button type="button" class="btn--ghost" data-modal-close>Cancelar</button>
+                            <button type="submit" class="btn--primary">Guardar Descripción</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- =================================================================
+                 MODAL 4: COMENTARIOS DE TAREA (Icono burbuja en tarjeta)
+                 BACKEND (TableroController.java):
+                 - Crear comentario: @PostMapping("/estudiante/tareas/comentar") -> tareaId, contenido
+                 ================================================================= -->
+            <div id="modal-comentarios-tarea" class="modal-overlay d-none" role="dialog" aria-modal="true" aria-labelledby="modal-comments-tarea-title">
+                <div class="modal-card" style="max-width: 520px;">
+                    <div class="modal-card__header">
+                        <div>
+                            <p id="comments-tarea-subtitle" class="font-mono text-uppercase m-0 mb-1" style="font-size: 11px; color: var(--color-accent);">
+                                COMENTARIOS
+                            </p>
+                            <h2 id="modal-comments-tarea-title" class="modal-card__title">Documentar requisitos</h2>
+                        </div>
+                        <button type="button" class="icon-btn" data-modal-close aria-label="Cerrar modal">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    <!-- Historial con scroll propio (más reciente primero) -->
+                    <div id="comments-list-container" class="task-comments-list mb-3">
+                        <p class="text-center m-0 py-3" style="font-size: 13px; color: var(--color-text-secondary);">
+                            Sin comentarios.
+                        </p>
+                    </div>
+
+                    <form th:action="@{/estudiante/tareas/comentar}" method="post">
+                        <input type="hidden" id="comments-tarea-id" name="tareaId">
+
+                        <div class="mb-2">
+                            <label for="nuevo-comentario-texto" class="login-label">Añadir comentario</label>
+                            <textarea id="nuevo-comentario-texto"
+                                      name="contenido"
+                                      class="lauki-textarea"
+                                      rows="3"
+                                      placeholder="Escribe un comentario para el equipo..."
+                                      required></textarea>
+                        </div>
+
+                        <div class="modal-card__footer">
+                            <button type="button" class="btn--ghost" data-modal-close>Cerrar</button>
+                            <button type="submit" class="btn--primary">Enviar Comentario</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- =================================================================
+                 MODAL 5: MOTIVO DEL BLOQUEO (Regla 3 de Drag & Drop -> Columna Bloqueada)
+                 BACKEND (TableroController.java):
+                 - @PostMapping("/estudiante/tareas/bloquear") -> id, motivoBloqueo (obligatorio)
+                 ================================================================= -->
+            <div id="modal-motivo-bloqueo" class="modal-overlay d-none" role="dialog" aria-modal="true" aria-labelledby="modal-bloqueo-title">
+                <div class="modal-card" style="max-width: 460px;">
+                    <div class="modal-card__header">
+                        <h2 id="modal-bloqueo-title" class="modal-card__title">Motivo del bloqueo</h2>
+                        <button type="button" class="icon-btn" data-modal-close aria-label="Cerrar modal">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    <form id="form-motivo-bloqueo" th:action="@{/estudiante/tareas/bloquear}" method="post">
+                        <input type="hidden" id="bloqueo-tarea-id" name="id">
+
+                        <div class="mb-2">
+                            <label for="bloqueo-motivo-texto" class="login-label">Explica por qué la tarea queda bloqueada</label>
+                            <textarea id="bloqueo-motivo-texto"
+                                      name="motivoBloqueo"
+                                      class="lauki-textarea"
+                                      rows="3"
+                                      placeholder="Ej. Pendiente de validación de requisitos por el cliente..."
+                                      required></textarea>
+                        </div>
+
+                        <div class="modal-card__footer">
+                            <button type="button" class="btn--ghost" data-modal-close>Cancelar</button>
+                            <button type="submit" class="btn--danger">Guardar Bloqueo</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<!-- Scripts para vista previa directa en VS Code (descartados en Spring Boot) -->
+<script th:remove="all" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:remove="all" src="../../static/js/main.js"></script>
 </body>
 </html>
