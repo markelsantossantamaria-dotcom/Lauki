@@ -45,7 +45,7 @@ docker compose up -d
 flowchart TD
     A["🔐 1. Login Unificado (/login)\nAutenticación en Spring Security"] --> B{"¿Rol del Usuario?"}
     
-    B -->|"ADMINISTRADOR"| C["🛠️ Panel Docente (/admin/cursos-usuarios)\nAlta Cursos, Alumnos, Retos y Equipos"]
+    B -->|"ADMINISTRADOR"| C["🛠️ Panel Docente (/admin)\nGestión modular: Cursos, Usuarios, Retos y Grupos"]
     B -->|"ESTUDIANTE"| D["👥 Espacio de Equipo (/mi-equipo)\nAutoasignación de Rol ETHAZI (Informativo)"]
     
     C --> E["🚀 Reto ACTIVO creado\nGrupos vinculados con 3 Fases base"]
@@ -119,7 +119,7 @@ Recursos/
 2. **Titularidad Individual y Registro Transaccional de Bloqueos:**  
    Imposibilidad técnica de mover una tarea a curso sin asignarle un responsable individual (`id_asignado`), junto con la apertura obligatoria de un modal para registrar el motivo justificado en la tabla inmutable `LOG_TAREA` al moverla a `BLOQUEADA`.
 3. **Gestión Académica Multi-Curso y Seguridad RBAC:**  
-   Login unificado en `/login` con redirección por rol (`ADMINISTRADOR` o `ESTUDIANTE`), precarga automática del Administrador inicial vía `DataInitializer` y panel docente para crear cursos anuales, matricular usuarios, estructurar retos y conformar equipos.
+   Login unificado en `/login` con redirección por rol (`ADMINISTRADOR` o `ESTUDIANTE`), precarga automática del Administrador inicial vía `DataInitializer` y panel docente modular (`/admin`, `/admin/cursos`, `/admin/usuarios`, `/admin/grupos`, `/admin/retos`) decorado con `layout.html` para crear cursos anuales, matricular usuarios, estructurar retos y conformar equipos.
 4. **Fases Configurables y Dinámica ETHAZI:**  
    Generación automática de 3 fases predeterminadas por reto (*1. Análisis y Diseño*, *2. Desarrollo*, *3. Pruebas y Despliegue*) con capacidad de ordenación/creación personalizada, además de selector visual de rol colaborativo (*Gestor, Analista, Desarrollador, Colaborador*).
 5. **Historial Inmutable de Proyectos Finalizados:**  
@@ -137,7 +137,7 @@ Recursos/
 | **Persistencia** | **Spring Data JPA / Hibernate** | `6.x` | Mapeo relacional de **8 entidades**, repositorios tipados con `Integer id` y sin claves compuestas. |
 | **Base de Datos**| **MySQL** | `8.0` | Motor relacional ACID en contenedor Docker, juego de caracteres `utf8mb4` e integridad referencial. |
 | **Validación** | **Jakarta Validation** | `Hibernate Val.` | Validación declarativa de modelos y DTOs (`@NotNull`, `@NotBlank`, `@Size`). |
-| **Frontend SSR**| **Thymeleaf + Security Extras** | `Thymeleaf 3` | Renderizado del lado del servidor con protección y renderizado condicional de componentes. |
+| **Frontend SSR**| **Thymeleaf + Layout Dialect** | `Thymeleaf 3` | Renderizado del lado del servidor con plantillas modulares (`layout.html`, `admin/cursos.html`, `admin/usuarios.html`, `admin/grupos.html`, `admin/retos.html`, `admin/panel.html`). |
 | **Diseño** | **Bootstrap** | `5.3` | Rejilla CSS responsiva, componentes visuales accesibles y modales interactivos. |
 | **Interacción** | **JavaScript Vanilla** | `ES6+` | Drag & Drop nativo HTML5, peticiones asíncronas `fetch` (< 60 líneas) sin dependencias SPA pesadas. |
 | **DevOps** | **Docker & Docker Compose** | `Compose v2` | Entorno contenerizado reproducible para entrega y validación técnica interciclos con ASIR. |
@@ -154,8 +154,8 @@ Recursos/
    La comunicación entre controladores, servicios y vistas se realiza mediante `record` (`TareaDTO`, `LogTareaDTO`). Cada DTO incorpora un método estático de fábrica `.from(Entity)`, resolviendo dependencias de lectura y evitando desacoples y errores de mapeo en capas superiores.
 3. **Erradicación de `LazyInitializationException` mediante `FetchType.EAGER` Selectivo:**  
    En las relaciones críticas de la entidad `Tarea` (`fase`, `asignado`), se emplea `FetchType.EAGER` junto con `CascadeType.ALL` en su colección de logs, garantizando que el serializador de Spring Boot y el renderizador de Thymeleaf tengan acceso inmediato a los datos sin recurrir al antipatrón `OpenSessionInView`.
-4. **Arquitectura Híbrida Ligera (SSR Thymeleaf + Vanilla JS < 60 Líneas):**  
-   En lugar de introducir sobrecarga con frameworks cliente SPA (React, Angular), se optó por un renderizado de servidor rápido y seguro, complementado con un script JavaScript ultraligero que aprovecha la API nativa HTML5 Drag & Drop y llamadas `fetch` asíncronas para actualizar estados en `/api/tareas/**`.
+4. **Arquitectura Híbrida Ligera (SSR Thymeleaf Layout Dialect + Vanilla JS < 60 Líneas):**  
+   En lugar de introducir sobrecarga con frameworks cliente SPA (React, Angular), se optó por un renderizado de servidor modular mediante `layout.html` y vistas hijas de administración especializadas, complementado con scripts ligeros.
 5. **Infraestructura Desacoplada y Parametrizada para Entrega ASIR:**  
    La base de datos MySQL 8 se ejecuta aislada en Docker con healthcheck de verificación de conectividad. Las propiedades en `application.properties` admiten variables de entorno (`SPRING_DATASOURCE_URL`, `DB_USERNAME`, `DB_PASSWORD`), permitiendo al ciclo de ASIR validar el despliegue sin alterar el código fuente.
 
@@ -188,4 +188,3 @@ Proyecto desarrollado por el equipo de desarrollo de **2º DAW** en **Zabalburu 
 - **Institución:** [Zabalburu Ikastetxea](https://www.zabalburu.org/) — Bilbao, Bizkaia
 - **Ciclo Formativo:** CFGS Desarrollo de Aplicaciones Web (DAW)
 - **Repositorio Oficial:** [GitHub - Lauki / Mapeando el Caos](https://github.com/ander-zabalburu/Lauki)
-
