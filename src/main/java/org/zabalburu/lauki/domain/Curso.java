@@ -26,7 +26,7 @@ public class Curso {
 	private String nombre;
 	
 	@Column(nullable = false)
-	private boolean activo = true;
+	private boolean activo;
 		
 	
 }
