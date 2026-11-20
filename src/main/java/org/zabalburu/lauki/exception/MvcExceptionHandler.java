@@ -8,25 +8,22 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.zabalburu.lauki.controller.HistorialController;
 import org.zabalburu.lauki.controller.TableroController;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Traduce las excepciones de los controladores MVC del Kanban a un redirect con
- * el aviso en el flash attribute "toastError", que las plantillas pintan como toast.
- * Solo afecta a TableroController e HistorialController. La API (/api/**) la sigue
- * cubriendo GlobalExceptionHandler, que responde JSON.
+ * Traduce las excepciones de TableroController a una redirección con el aviso
+ * en el atributo flash "toastError". GlobalExceptionHandler responde en JSON
+ * para los controladores REST.
  * Spring elige siempre el handler cuyo tipo está más cerca en la herencia.
  */
 @Slf4j
-@ControllerAdvice(assignableTypes = { TableroController.class, HistorialController.class })
+@ControllerAdvice(assignableTypes = TableroController.class)
 public class MvcExceptionHandler {
 
 	private static final String RUTA_TABLERO = "/estudiante/tablero";
-	private static final String RUTA_HISTORIAL = "/estudiante/historial";
 
 	private static final String MSG_DATOS_INVALIDOS = "Los datos enviados no son válidos";
 	private static final String MSG_CAMPO_INVALIDO = "El valor del campo '%s' no es válido";
@@ -75,7 +72,7 @@ public class MvcExceptionHandler {
 	/**
 	 * Vuelve a la página desde la que se envió la petición (cabecera Referer).
 	 * Solo se aprovecha la ruta y la query, nunca el host, para no redirigir a sitios externos.
-	 * Sin Referer válido: historial si la petición era del historial, tablero en cualquier otro caso.
+	 * Sin Referer válido, vuelve al tablero.
 	 */
 	private String calcularDestino(HttpServletRequest request) {
 		String referer = request.getHeader(HttpHeaders.REFERER);
@@ -90,6 +87,6 @@ public class MvcExceptionHandler {
 				log.debug("Cabecera Referer no válida: {}", referer);
 			}
 		}
-		return request.getRequestURI().startsWith(RUTA_HISTORIAL) ? RUTA_HISTORIAL : RUTA_TABLERO;
+		return RUTA_TABLERO;
 	}
 }
