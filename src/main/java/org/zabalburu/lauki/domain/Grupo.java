@@ -30,9 +30,4 @@ public class Grupo {
 	
 	@Column(name = "fecha_creacion", nullable = false)
 	private LocalDateTime fechaCreacion;
-	
-	
-	
-	
-	
 }
