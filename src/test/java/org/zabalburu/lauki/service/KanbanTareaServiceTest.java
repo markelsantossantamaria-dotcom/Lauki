@@ -11,7 +11,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -37,9 +37,9 @@ import org.zabalburu.lauki.dto.request.CambiarEstadoTareaRequest;
 import org.zabalburu.lauki.dto.request.ComentarioRequest;
 import org.zabalburu.lauki.dto.request.CrearTareaRequest;
 import org.zabalburu.lauki.dto.response.TareaResponse;
+import org.zabalburu.lauki.exception.DatosTareaInvalidosException;
 import org.zabalburu.lauki.exception.RecursoInactivoException;
 import org.zabalburu.lauki.exception.RecursoNoEncontradoException;
-import org.zabalburu.lauki.exception.ReglaNegocioException;
 import org.zabalburu.lauki.exception.ResponsableAjenoAlGrupoException;
 import org.zabalburu.lauki.exception.RetoNoEditableException;
 import org.zabalburu.lauki.exception.TareaSinResponsableException;
@@ -300,7 +300,7 @@ class KanbanTareaServiceTest {
     void rechazaUnComentarioEnBlanco() {
         cargarTareaDelGrupo();
 
-        assertThrows(ReglaNegocioException.class,
+        assertThrows(DatosTareaInvalidosException.class,
                 () -> servicio.comentar(CORREO_ACTOR, ID_TAREA, new ComentarioRequest("  ")));
         assertTrue(tarea.getLogs().isEmpty());
         verify(tareaRepository, never()).flush();
