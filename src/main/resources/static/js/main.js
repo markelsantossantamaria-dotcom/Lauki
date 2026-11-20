@@ -446,15 +446,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!modal) return;
             document.getElementById('comments-tarea-id').value = card.getAttribute('data-task-id') || '';
             document.getElementById('modal-comments-tarea-title').textContent = card.getAttribute('data-task-titulo') || 'Comentarios';
+            const commentsList = modal.querySelector('#comments-list-container');
+            const taskComments = card.querySelector('template[data-task-comments]')?.content;
+            const emptyComments = modal.querySelector('#comments-empty-template').content;
+            const comments = taskComments?.firstElementChild ? taskComments : emptyComments;
+            commentsList.replaceChildren(comments.cloneNode(true));
             modal.classList.remove('d-none');
         });
     });
 
-    // Drag & Drop con las 4 reglas del Kanban
+    // Arrastre de tarjetas del Kanban
     const boardSection = document.querySelector('.kanban--board');
     if (boardSection) {
         let draggedCard = null;
         let pendingBlockCard = null;
+        const cardsBeingMoved = new WeakSet();
 
         function rejectCardMove(card, errorMsg) {
             card.classList.remove('task-card--rejected');
@@ -466,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
         function applyCardStatusStyle(card, newStatus) {
             card.classList.remove('task-card--progreso', 'task-card--supervision', 'task-card--completada', 'task-card--bloqueada');
             if (newStatus === 'EN_PROGRESO') card.classList.add('task-card--progreso');
-            if (newStatus === 'EN_REVISION') card.classList.add('task-card--supervision');
+            if (newStatus === 'EN_SUPERVISION') card.classList.add('task-card--supervision');
             if (newStatus === 'COMPLETADA') card.classList.add('task-card--completada');
             if (newStatus === 'BLOQUEADA') card.classList.add('task-card--bloqueada');
             card.setAttribute('data-task-status', newStatus);
@@ -478,6 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.add('task-card--dragging');
             });
             card.addEventListener('dragend', () => {
+                draggedCard = null;
                 card.classList.remove('task-card--dragging');
                 document.querySelectorAll('.kanban__column').forEach(col => col.classList.remove('kanban__column--over'));
             });
@@ -493,55 +500,65 @@ document.addEventListener('DOMContentLoaded', () => {
                 col.classList.remove('kanban__column--over');
             });
 
-            col.addEventListener('drop', (e) => {
+            col.addEventListener('drop', async (e) => {
                 e.preventDefault();
                 col.classList.remove('kanban__column--over');
-                if (!draggedCard) return;
+                const card = draggedCard;
+                if (!card || cardsBeingMoved.has(card)) return;
 
-                const currentStatus = draggedCard.getAttribute('data-task-status');
+                const currentStatus = card.getAttribute('data-task-status');
                 const targetStatus = col.getAttribute('data-column-status');
                 if (currentStatus === targetStatus) return;
 
-                const hasResponsable = draggedCard.getAttribute('data-has-responsable') === 'true';
+                const hasResponsable = card.getAttribute('data-has-responsable') === 'true';
 
-                // Regla 1: Sin responsable no se puede mover a ninguna columna
                 if (!hasResponsable) {
-                    rejectCardMove(draggedCard, 'Debes asignar un responsable antes de mover la tarea');
+                    rejectCardMove(card, 'Debes asignar un responsable antes de mover la tarea');
                     return;
                 }
 
-                // Regla 2: Prohibido saltar desde Pendiente a En Supervisión o Completada
-                if (currentStatus === 'PENDIENTE' && (targetStatus === 'EN_REVISION' || targetStatus === 'COMPLETADA')) {
-                    rejectCardMove(draggedCard, 'Salto de fase no permitido');
-                    return;
-                }
-
-                // Regla 3: Mover a Bloqueada abre modal de motivo obligatorio antes de mover
                 if (targetStatus === 'BLOQUEADA') {
-                    pendingBlockCard = draggedCard;
+                    pendingBlockCard = card;
                     const blockModal = document.getElementById('modal-motivo-bloqueo');
                     const blockIdInput = document.getElementById('bloqueo-tarea-id');
-                    if (blockIdInput) blockIdInput.value = draggedCard.getAttribute('data-task-id') || '';
+                    if (blockIdInput) blockIdInput.value = card.getAttribute('data-task-id') || '';
                     if (blockModal) blockModal.classList.remove('d-none');
                     return;
                 }
 
-                // Movimiento válido
                 const listContainer = col.querySelector('.kanban__cards');
-                listContainer.appendChild(draggedCard);
-                applyCardStatusStyle(draggedCard, targetStatus);
-                updateKanbanCounts();
+                if (!listContainer) return;
 
-                // Notificar al servidor Spring Boot si existe endpoint activo
                 const baseMoveUrl = boardSection.getAttribute('data-move-url');
-                const taskId = draggedCard.getAttribute('data-task-id');
+                const taskId = card.getAttribute('data-task-id');
                 if (baseMoveUrl && taskId && window.location.protocol !== 'file:') {
-                    fetch(`${baseMoveUrl}/${taskId}/mover`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({ estado: targetStatus })
-                    }).catch(() => {});
+                    const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+                    const csrfToken = document.querySelector('input[name="_csrf"]')?.value;
+                    if (csrfToken) headers['X-CSRF-TOKEN'] = csrfToken;
+
+                    cardsBeingMoved.add(card);
+                    try {
+                        const response = await fetch(`${baseMoveUrl}/${taskId}/mover`, {
+                            method: 'POST',
+                            headers,
+                            body: new URLSearchParams({ estado: targetStatus })
+                        });
+                        if (!response.ok || response.redirected) {
+                            const error = await response.json().catch(() => null);
+                            rejectCardMove(card, error?.mensaje || 'No se pudo guardar el cambio de estado');
+                            return;
+                        }
+                    } catch {
+                        rejectCardMove(card, 'No se pudo conectar con el servidor');
+                        return;
+                    } finally {
+                        cardsBeingMoved.delete(card);
+                    }
                 }
+
+                listContainer.appendChild(card);
+                applyCardStatusStyle(card, targetStatus);
+                updateKanbanCounts();
             });
         });
 
