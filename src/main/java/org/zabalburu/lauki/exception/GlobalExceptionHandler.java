@@ -52,6 +52,13 @@ public class GlobalExceptionHandler {
         return new ErrorResponse(HttpStatus.FORBIDDEN.value(), ex.getMessage());
     }
 
+    @ExceptionHandler(TareaSinResponsableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleTareaSinResponsable(TareaSinResponsableException ex) {
+        log.warn("Regla de negocio incumplida: {}", ex.getMessage());
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+    }
+
     /** Resto de hijas de BusinessException (y las futuras): 422 por defecto. */
     @ExceptionHandler(BusinessException.class)
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
