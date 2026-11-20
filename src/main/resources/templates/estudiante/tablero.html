@@ -126,15 +126,14 @@
 
             <!-- CONTENEDOR DE TOASTS DE FEEDBACK (Mensajes flash o errores de arrastre) -->
             <div id="lauki-toast-container" aria-live="polite">
-                <!-- BACKEND (TableroController.java): Mensajes Flash tras RedirectAttributes (ocultos en VS Code con th:remove="all") -->
-                <div th:if="${toastExito != null}" th:remove="all" class="toast-lauki toast-lauki--success" role="status">
+                <div th:if="${toastExito != null}" class="toast-lauki toast-lauki--success" role="status">
                     <i class="bi bi-check-circle-fill" style="color: var(--color-success); font-size: 16px;"></i>
                     <span th:text="${toastExito}">Cambios guardados</span>
                     <button type="button" class="icon-btn ms-auto" onclick="this.parentElement.remove()" aria-label="Cerrar aviso">
                         <i class="bi bi-x-lg" style="font-size: 12px;"></i>
                     </button>
                 </div>
-                <div th:if="${toastError != null}" th:remove="all" class="toast-lauki toast-lauki--error" role="alert">
+                <div th:if="${toastError != null}" class="toast-lauki toast-lauki--error" role="alert">
                     <i class="bi bi-exclamation-circle-fill" style="color: var(--color-error); font-size: 16px;"></i>
                     <span th:text="${toastError}">Error al mover la tarea</span>
                     <button type="button" class="icon-btn ms-auto" onclick="this.parentElement.remove()" aria-label="Cerrar aviso">
@@ -221,6 +220,7 @@
                                           data-task-responsable-id=${tarea.responsable != null ? tarea.responsable.id : ''},
                                           data-task-status='PENDIENTE',
                                           data-has-responsable=${tarea.responsable != null}">
+                            <template th:replace="~{:: comentariosTarjeta(${tarea.comentarios})}"></template>
                             <h3 class="task-card__title-wrap">
                                 <button type="button" class="task-card__title-btn" data-open-edit-task>
                                     <span th:text="${tarea.titulo}">Documentar requisitos</span>
@@ -297,6 +297,7 @@
                                           data-task-responsable-id=${tarea.responsable != null ? tarea.responsable.id : ''},
                                           data-task-status='EN_PROGRESO',
                                           data-has-responsable=${tarea.responsable != null}">
+                            <template th:replace="~{:: comentariosTarjeta(${tarea.comentarios})}"></template>
                             <h3 class="task-card__title-wrap">
                                 <button type="button" class="task-card__title-btn" data-open-edit-task>
                                     <span th:text="${tarea.titulo}">Entrevistas a usuarios</span>
@@ -354,7 +355,7 @@
                 </div>
 
                 <!-- COLUMNA 3: EN SUPERVISIÓN -->
-                <div class="kanban__column kanban__column--supervision" data-column-status="EN_REVISION">
+                <div class="kanban__column kanban__column--supervision" data-column-status="EN_SUPERVISION">
                     <div class="kanban__column-header">
                         <h2 class="kanban__column-title">En Supervisión</h2>
                         <span class="kanban__column-count"
@@ -372,8 +373,9 @@
                                           data-task-fase-id=${tarea.fase.id},
                                           data-task-fase-label=${'FASE ' + tarea.fase.numeroOrden + ' · ' + #strings.toUpperCase(tarea.fase.nombre)},
                                           data-task-responsable-id=${tarea.responsable != null ? tarea.responsable.id : ''},
-                                          data-task-status='EN_REVISION',
+                                          data-task-status='EN_SUPERVISION',
                                           data-has-responsable=${tarea.responsable != null}">
+                            <template th:replace="~{:: comentariosTarjeta(${tarea.comentarios})}"></template>
                             <h3 class="task-card__title-wrap">
                                 <button type="button" class="task-card__title-btn" data-open-edit-task>
                                     <span th:text="${tarea.titulo}">Título tarea</span>
@@ -440,6 +442,7 @@
                                           data-task-responsable-id=${tarea.responsable != null ? tarea.responsable.id : ''},
                                           data-task-status='COMPLETADA',
                                           data-has-responsable=${tarea.responsable != null}">
+                            <template th:replace="~{:: comentariosTarjeta(${tarea.comentarios})}"></template>
                             <h3 class="task-card__title-wrap">
                                 <button type="button" class="task-card__title-btn" data-open-edit-task>
                                     <span th:text="${tarea.titulo}">Título tarea</span>
@@ -506,6 +509,7 @@
                                           data-task-responsable-id=${tarea.responsable != null ? tarea.responsable.id : ''},
                                           data-task-status='BLOQUEADA',
                                           data-has-responsable=${tarea.responsable != null}">
+                            <template th:replace="~{:: comentariosTarjeta(${tarea.comentarios})}"></template>
                             <h3 class="task-card__title-wrap">
                                 <button type="button" class="task-card__title-btn" data-open-edit-task>
                                     <span th:text="${tarea.titulo}">Título tarea</span>
@@ -795,11 +799,12 @@
                     </div>
 
                     <!-- Historial con scroll propio (más reciente primero) -->
-                    <div id="comments-list-container" class="task-comments-list mb-3">
+                    <template id="comments-empty-template">
                         <p class="text-center m-0 py-3" style="font-size: 13px; color: var(--color-text-secondary);">
                             Sin comentarios.
                         </p>
-                    </div>
+                    </template>
+                    <div id="comments-list-container" class="task-comments-list mb-3"></div>
 
                     <form th:action="@{/estudiante/tareas/comentar}" method="post">
                         <input type="hidden" id="comments-tarea-id" name="tareaId">
@@ -860,6 +865,17 @@
         </div>
     </main>
 </div>
+
+<template th:fragment="comentariosTarjeta(comentarios)" data-task-comments>
+    <article th:each="comentario : ${comentarios}" class="mb-3">
+        <div class="d-flex flex-wrap justify-content-between gap-2 small">
+            <strong th:text="${comentario.responsableNombre}"></strong>
+            <time th:datetime="${comentario.fechaRegistro}"
+                  th:text="${#temporals.format(comentario.fechaRegistro, 'dd/MM/yyyy HH:mm')}"></time>
+        </div>
+        <p class="m-0 text-break" style="white-space: pre-wrap;" th:text="${comentario.comentario}"></p>
+    </article>
+</template>
 
 <!-- Scripts para vista previa directa en VS Code (descartados en Spring Boot) -->
 <script th:remove="all" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
