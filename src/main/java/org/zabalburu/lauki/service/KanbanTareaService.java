@@ -21,9 +21,9 @@ import org.zabalburu.lauki.dto.request.CambiarEstadoTareaRequest;
 import org.zabalburu.lauki.dto.request.ComentarioRequest;
 import org.zabalburu.lauki.dto.request.CrearTareaRequest;
 import org.zabalburu.lauki.dto.response.TareaResponse;
+import org.zabalburu.lauki.exception.DatosTareaInvalidosException;
 import org.zabalburu.lauki.exception.RecursoInactivoException;
 import org.zabalburu.lauki.exception.RecursoNoEncontradoException;
-import org.zabalburu.lauki.exception.ReglaNegocioException;
 import org.zabalburu.lauki.exception.ResponsableAjenoAlGrupoException;
 import org.zabalburu.lauki.exception.RetoNoEditableException;
 import org.zabalburu.lauki.exception.TareaSinResponsableException;
@@ -42,6 +42,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class KanbanTareaService {
+
+    private static final int LONGITUD_MAXIMA_TITULO = 200;
 
     private final TareaRepository tareaRepository;
     private final FaseRepository faseRepository;
@@ -68,7 +70,7 @@ public class KanbanTareaService {
         Usuario actor = buscarActor(correoActor);
         validarTitulo(solicitud.titulo());
         if (solicitud.faseId() == null) {
-            throw new ReglaNegocioException("La fase es obligatoria");
+            throw DatosTareaInvalidosException.faseObligatoria();
         }
         Fase fase = faseRepository.findById(solicitud.faseId())
                 .orElseThrow(() -> new RecursoNoEncontradoException(Fase.class, solicitud.faseId()));
@@ -76,20 +78,31 @@ public class KanbanTareaService {
         validarEscritura(actor, grupo);
 
         Usuario responsable = buscarResponsable(solicitud.responsableId(), grupo);
+        
         Tarea tarea = tareaMapper.toEntity(solicitud, fase, responsable);
-        registrarEvento(tarea, actor, TipoEventoLog.CREACION, null, EstadoTarea.PENDIENTE, null);
+        
+        registrarEvento(
+        		tarea, 
+        		actor, 
+        		TipoEventoLog.CREACION, 
+        		null, 
+        		EstadoTarea.PENDIENTE, 
+        		null);
         return tareaMapper.toDTO(tareaRepository.saveAndFlush(tarea));
     }
 
     public TareaResponse editarTarea(String correoActor, Integer idTarea, String titulo,
             Integer faseId, Integer responsableId) {
         Usuario actor = buscarActor(correoActor);
+        
         Tarea tarea = buscarTareaEditable(actor, idTarea);
+        
         validarTitulo(titulo);
         if (faseId == null) {
-            throw new ReglaNegocioException("La fase es obligatoria");
+            throw DatosTareaInvalidosException.faseObligatoria();
         }
         Grupo grupo = tarea.getFase().getGrupo();
+        
         Fase fase = faseRepository.findByIdAndGrupo_Id(faseId, grupo.getId())
                 .orElseThrow(() -> new RecursoNoEncontradoException(Fase.class, faseId));
 
@@ -101,7 +114,9 @@ public class KanbanTareaService {
 
     public TareaResponse asignarResponsable(String correoActor, Integer idTarea, Integer responsableId) {
         Tarea tarea = buscarTareaEditable(buscarActor(correoActor), idTarea);
+        
         actualizarResponsable(tarea, responsableId);
+        
         return tareaMapper.toDTO(tarea);
     }
 
@@ -113,11 +128,15 @@ public class KanbanTareaService {
 
     public TareaResponse cambiarEstado(String correoActor, Integer idTarea, CambiarEstadoTareaRequest solicitud) {
         Usuario actor = buscarActor(correoActor);
+        
         Tarea tarea = buscarTareaEditable(actor, idTarea);
+        
         EstadoTarea destino = solicitud.estado();
+        
         validarResponsableAsignado(tarea);
+        
         if (destino == null) {
-            throw new ReglaNegocioException("El estado es obligatorio");
+            throw DatosTareaInvalidosException.estadoObligatorio();
         }
         if (destino == EstadoTarea.BLOQUEADA) {
             throw TransicionEstadoInvalidaException.bloqueoSinMotivo();
@@ -132,8 +151,11 @@ public class KanbanTareaService {
 
     public TareaResponse bloquear(String correoActor, BloqueoTareaRequest solicitud) {
         Usuario actor = buscarActor(correoActor);
+        
         Tarea tarea = buscarTareaEditable(actor, solicitud.id());
+        
         validarResponsableAsignado(tarea);
+        
         if (tarea.getEstadoTarea() == EstadoTarea.BLOQUEADA) {
             throw TransicionEstadoInvalidaException.yaBloqueada();
         }
@@ -148,10 +170,13 @@ public class KanbanTareaService {
 
     public TareaResponse comentar(String correoActor, Integer idTarea, ComentarioRequest solicitud) {
         Usuario actor = buscarActor(correoActor);
+        
         Tarea tarea = buscarTareaEditable(actor, idTarea);
+        
         String comentario = solicitud.comentario();
+        
         if (comentario == null || comentario.isBlank()) {
-            throw new ReglaNegocioException("El comentario no puede estar vacío");
+            throw DatosTareaInvalidosException.comentarioVacio();
         }
         registrarEvento(tarea, actor, TipoEventoLog.COMENTARIO, null, null, comentario.strip());
         tareaRepository.flush();
@@ -174,7 +199,7 @@ public class KanbanTareaService {
 
     private Tarea buscarTareaEditable(Usuario actor, Integer idTarea) {
         if (idTarea == null) {
-            throw new ReglaNegocioException("El identificador de la tarea es obligatorio");
+            throw DatosTareaInvalidosException.identificadorObligatorio();
         }
         Tarea tarea = tareaRepository.findById(idTarea)
                 .orElseThrow(() -> new RecursoNoEncontradoException(Tarea.class, idTarea));
@@ -184,6 +209,7 @@ public class KanbanTareaService {
 
     private void validarEscritura(Usuario actor, Grupo grupo) {
         validarEstudianteDelGrupo(actor, grupo);
+        
         validarRetoActivo(grupo);
     }
 
@@ -203,10 +229,10 @@ public class KanbanTareaService {
 
     private void validarTitulo(String titulo) {
         if (titulo == null || titulo.isBlank()) {
-            throw new ReglaNegocioException("El título es obligatorio");
+            throw DatosTareaInvalidosException.tituloObligatorio();
         }
-        if (titulo.length() > 200) {
-            throw new ReglaNegocioException("El título no puede superar los 200 caracteres");
+        if (titulo.length() > LONGITUD_MAXIMA_TITULO) {
+            throw DatosTareaInvalidosException.tituloDemasiadoLargo(LONGITUD_MAXIMA_TITULO);
         }
     }
 
@@ -241,7 +267,9 @@ public class KanbanTareaService {
     private void aplicarTransicion(Tarea tarea, Usuario actor, EstadoTarea destino,
             TipoEventoLog tipoEvento, String motivo) {
         EstadoTarea origen = tarea.getEstadoTarea();
+        
         LocalDateTime ahora = LocalDateTime.now();
+        
         if (origen == EstadoTarea.PENDIENTE && tarea.getFechaInicializacion() == null) {
             tarea.setFechaInicializacion(ahora);
         }
