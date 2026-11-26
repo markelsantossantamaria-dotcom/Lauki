@@ -18,7 +18,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class LogTarea {
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@EqualsAndHashCode.Include
@@ -28,7 +30,7 @@ public class LogTarea {
 	@JoinColumn(name = "id_tarea", nullable = false)
 	private Tarea tarea;
 	
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_usuario", nullable = false)
 	private Usuario usuario;
 	
@@ -47,6 +49,7 @@ public class LogTarea {
 	@Column(columnDefinition = "TEXT", nullable = true)
 	private String comentario;
 	
-	@Column(name = "fecha_registro", nullable = false)
-	private LocalDateTime fechaRegistro;
+	@Column(name = "fecha_registro", nullable = false, updatable = false)
+	private LocalDateTime fechaRegistro = LocalDateTime.now();
+	
 }
