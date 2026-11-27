@@ -24,7 +24,8 @@ public class SecurityConfig {
         	.authorizeHttpRequests(auth -> auth
         	    .requestMatchers("/login", "/css/**", "/js/**").permitAll()
         	    .requestMatchers("/admin", "/admin/**").hasRole("ADMINISTRADOR")
-        	    .requestMatchers("/tablero/**", "/grupo/**", "/api/**").hasAnyRole("ESTUDIANTE", "ADMINISTRADOR")
+        	    .requestMatchers("/estudiante/**", "/tablero/**", "/grupo/**", "/api/**")
+        	        .hasAnyRole("ESTUDIANTE", "ADMINISTRADOR")
         	    .anyRequest().authenticated()
         	)
             .formLogin(form -> form
@@ -35,7 +36,7 @@ public class SecurityConfig {
                     if (isAdmin) {
                         response.sendRedirect("/admin/panel");
                     } else {
-                        response.sendRedirect("/tablero");
+                        response.sendRedirect("/estudiante/tablero");
                     }
                 })
                 .permitAll()
