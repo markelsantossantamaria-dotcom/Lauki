@@ -130,12 +130,16 @@
                         th:classappend="${seccionActiva == 'retos'} ? 'sidebar__link--active' : ''">
                         <i class="bi bi-flag"></i> <span>Retos</span>
                     </a>
-
+					
                 </div>
 
                 <!--/* BLOQUE 2: ESTUDIANTE (Rutas de TableroController.java) - Descomentar y condicionar con th:if cuando el rol sea ESTUDIANTE*/-->
                 <div id="menu-estudiante" sec:authorize="hasRole('ESTUDIANTE')">
+<<<<<<< HEAD
                     <a th:href="@{/tablero}" href="#" title="Mi Tablero" class="sidebar__link mb-1">
+=======
+                    <a th:href="@{/estudiante/tablero}" href="#" title="Mi Tablero" class="sidebar__link mb-1">
+>>>>>>> feature-ander
                         <i class="bi bi-kanban"></i> <span>Mi Tablero</span>
                     </a>
                     <a th:href="@{/equipo}" href="#" title="Mi Equipo" class="sidebar__link mb-1">
