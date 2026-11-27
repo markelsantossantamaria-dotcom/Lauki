@@ -51,12 +51,19 @@
                th:if="${param.error != null or error != null}"
                y quitad 'd-none' (o usad th:class="'alert d-flex align-items-center gap-2 py-2 px-3 mb-3'")
              ========================================================================= -->
-        <div class="d-none"
-             role="alert"
+        <div th:if="${param.error !=null or error != null}"
+			 role="alert"
              style="background-color: rgba(220, 38, 38, 0.08); border: 1px solid var(--color-error); color: var(--color-error); border-radius: 8px; font-size: 13px;">
             <i class="bi bi-exclamation-triangle-fill"></i>
-            <!-- BACKEND: Podéis hacer el mensaje dinámico con th:text="${error ?: 'Correo o contraseña incorrectos'}" -->
-            <span>Correo o contraseña incorrectos</span>
+            <span th:text="${error ?: 'Credenciales incorrectas o cuenta desactivada'}"></span>
+        </div>
+
+        <div th:if="${param.logout != null or logout != null}"
+             role="alert"
+             class="d-flex align-items-center gap-2 py-2 px-3 mb-3"
+             style="background-color: rgba(34, 197, 94, 0.08); border: 1px solid var(--color-success, #22c55e); color: var(--color-success, #22c55e); border-radius: 8px; font-size: 13px;">
+            <i class="bi bi-check-circle-fill"></i>
+            <span th:text="${logout ?: 'Sesión cerrada con éxito'}"></span>
         </div>
 
         <!-- =========================================================================
@@ -65,14 +72,14 @@
              - Revisar que los atributos name="email" y name="password" coincidan con los 
                @RequestParam o atributos del objeto que reciba AuthController.
              ========================================================================= -->
-        <form action="#" method="post" id="login-form" novalidate>
+        <form th:action="@{/login}" method="post" id="login-form" novalidate>
 
             <div class="mb-3">
                 <label for="email" class="login-label">Correo</label>
                 <div class="pill-input-wrapper">
                     <i class="bi bi-envelope pill-icon-left"></i>
                     <!-- BACKEND: Si usáis th:object, añadir th:field="*{email}" -->
-                    <input type="email" id="email" name="email" class="pill-input" placeholder="tu@correo.com" required>
+                    <input type="email" id="email" name="username" class="pill-input" placeholder="tu@correo.com" required>
                 </div>
                 <p class="field__error d-none" id="email-error"></p>
             </div>
