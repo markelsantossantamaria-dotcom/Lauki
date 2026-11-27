@@ -13,10 +13,12 @@ import org.zabalburu.lauki.domain.Reto;
 import org.zabalburu.lauki.domain.Usuario;
 import org.zabalburu.lauki.domain.enums.EstadoReto;
 import org.zabalburu.lauki.domain.enums.RolEnGrupo;
+import org.zabalburu.lauki.domain.enums.RolSistema;
 import org.zabalburu.lauki.exception.ReglaNegocioException;
 import org.zabalburu.lauki.exception.RecursoNoEncontradoException;
 import org.zabalburu.lauki.exception.RetoNoEditableException;
 import org.zabalburu.lauki.exception.UsuarioNoPerteneceAlGrupoException;
+import org.zabalburu.lauki.exception.RecursoInactivoException;
 import org.zabalburu.lauki.mapper.FaseMapper;
 import org.zabalburu.lauki.repository.FaseRepository;
 import org.zabalburu.lauki.repository.MiembroGrupoRepository;
@@ -154,7 +156,11 @@ public class EquipoFaseService {
         }
 
         String nombreNormalizado = nombre.trim();
-        if (faseRepository.existsByNombreFaseAndGrupo_Id(nombreNormalizado, grupo.getId())) {
+        boolean nombreDuplicado = faseRepository.existsByNombreFaseAndGrupo_Id(nombreNormalizado, grupo.getId())
+                || faseRepository.findAllByGrupo_IdOrderByOrdenAsc(grupo.getId()).stream()
+                        .anyMatch(faseExistente -> faseExistente.getNombreFase() != null
+                                && faseExistente.getNombreFase().equalsIgnoreCase(nombreNormalizado));
+        if (nombreDuplicado) {
             throw new ReglaNegocioException("Ya existe una fase con el nombre " + nombreNormalizado);
         }
 
@@ -172,6 +178,43 @@ public class EquipoFaseService {
     }
 
     @Transactional
+    public Fase editarFase(Integer idUsuario, Integer idFase, String nombre, Integer orden) {
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new ReglaNegocioException("El nombre de la fase no puede estar vacío");
+        }
+        if (orden == null || orden < 1) {
+            throw new ReglaNegocioException("El orden de la fase debe ser mayor o igual que 1");
+        }
+
+        MiembroGrupo miembroActivo = obtenerGrupoActivo(idUsuario);
+        Grupo grupo = miembroActivo.getGrupo();
+        validarRetoActivo(grupo);
+
+        Fase fase = faseRepository.findByIdAndGrupo_Id(idFase, grupo.getId())
+                .orElseThrow(() -> new RecursoNoEncontradoException(Fase.class, idFase));
+
+        String nombreNormalizado = nombre.trim();
+        boolean nombreDuplicado = faseRepository
+                .findAllByGrupo_IdOrderByOrdenAsc(grupo.getId()).stream()
+                .filter(otra -> !otra.getId().equals(fase.getId()))
+                .anyMatch(otra -> otra.getNombreFase() != null
+                        && otra.getNombreFase().equalsIgnoreCase(nombreNormalizado));
+        if (nombreDuplicado) {
+            throw new ReglaNegocioException("Ya existe una fase con el nombre " + nombreNormalizado);
+        }
+
+        fase.setNombreFase(nombreNormalizado);
+        fase.setOrden(orden);
+        return faseRepository.save(fase);
+    }
+
+    @Transactional
+    public Fase editarFase(String correo, Integer idFase, String nombre, Integer orden) {
+        Usuario usuario = buscarUsuarioPorCorreo(correo);
+        return editarFase(usuario.getId(), idFase, nombre, orden);
+    }
+
+    @Transactional
     public void eliminarFase(Integer idUsuario, Integer idFase) {
         MiembroGrupo miembroActivo = obtenerGrupoActivo(idUsuario);
         Grupo grupo = miembroActivo.getGrupo();
@@ -185,7 +228,7 @@ public class EquipoFaseService {
                 .orElseThrow(() -> new RecursoNoEncontradoException(Fase.class, idFase));
 
         if (tareaRepository.existsByFase_Id(fase.getId())) {
-            throw new ReglaNegocioException("La fase " + idFase + " tiene tareas y no puede eliminarse");
+            throw new ReglaNegocioException("No puedes eliminar una fase que contiene tareas; muévelas o elimínalas primero");
         }
 
         faseRepository.delete(fase);
@@ -206,6 +249,14 @@ public class EquipoFaseService {
                         .map(Reto::getEstadoReto)
                         .filter(estado -> estado == EstadoReto.FINALIZADO)
                         .isPresent())
+                .sorted((miembro1, miembro2) -> {
+                    Integer id1 = miembro1.getGrupo() != null ? miembro1.getGrupo().getId() : null;
+                    Integer id2 = miembro2.getGrupo() != null ? miembro2.getGrupo().getId() : null;
+                    if (id1 == null && id2 == null) return 0;
+                    if (id1 == null) return 1;
+                    if (id2 == null) return -1;
+                    return id2.compareTo(id1);
+                })
                 .toList();
     }
 
@@ -236,11 +287,19 @@ public class EquipoFaseService {
     }
 
     private Usuario buscarUsuarioPorCorreo(String correo) {
-        return Optional.ofNullable(correo)
+        Usuario usuario = Optional.ofNullable(correo)
                 .map(String::trim)
                 .filter(correoNormalizado -> !correoNormalizado.isEmpty())
                 .flatMap(usuarioRepository::findByCorreoIgnoreCase)
                 .orElseThrow(() -> new RecursoNoEncontradoException(Usuario.class, null));
+
+        if (!usuario.isActivo()) {
+            throw new RecursoInactivoException(Usuario.class, usuario.getId());
+        }
+        if (usuario.getRolSistema() != RolSistema.ESTUDIANTE) {
+            throw new ReglaNegocioException("Solo los estudiantes pueden acceder a esta operación");
+        }
+        return usuario;
     }
 
     private MiembroEquipoDTO toMiembroEquipoDTO(MiembroGrupo miembro) {
