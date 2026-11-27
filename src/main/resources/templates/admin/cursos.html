@@ -164,40 +164,71 @@
                      - Las filas estáticas siguientes sirven de ejemplo visual para VS Code;
                        cuando conectéis th:each podéis dejar una sola <tr> dinámica.
                      ========================================================================= -->
+                <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+                    <div class="pill-input-wrapper flex-grow-1" style="max-width: 320px;">
+                        <i class="bi bi-search pill-icon-left"></i>
+                        <input type="text" id="filtro-curso-input" class="pill-input" placeholder="Buscar curso o periodo...">
+                    </div>
+                </div>
+
                 <section class="table-card" aria-label="Listado de cursos">
                     <table class="lauki-table">
                         <thead>
                             <tr>
                                 <th>Curso</th>
-                                <th class="text-end">Alumnos</th>
+                                <th>Periodo Académico</th>
+                                <th>Estado</th>
+                                <th class="text-end"><span class="visually-hidden">Acciones</span></th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <!-- Ejemplo fila 1 (BACKEND: reemplazar por th:each="curso : ${cursos}") -->
-                            <tr>
+                        <tbody id="tabla-cursos-body">
+                            <tr th:each="curso : ${cursos}" class="curso-row" th:data-nombre="${curso.nombre}" th:data-periodo="${curso.periodoAcademico}">
+                                <td class="fw-semibold" th:text="${curso.nombre}">1º DAW</td>
+                                <td>
+                                    <span class="font-mono" style="font-size: 13px;" th:text="${curso.periodoAcademico ?: '—'}">2026/2027</span>
+                                </td>
+                                <td>
+                                    <span th:if="${curso.activo}" class="badge-status badge-status--active">Activo</span>
+                                    <span th:unless="${curso.activo}" class="badge-status badge-status--finished">Inactivo</span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex align-items-center gap-2">
+                                        <button type="button"
+                                                class="btn--row-icon"
+                                                title="Editar curso"
+                                                aria-label="Editar curso"
+                                                data-modal-open="modal-editar-curso"
+                                                th:data-curso-id="${curso.id}"
+                                                th:data-curso-nombre="${curso.nombre}"
+                                                th:data-curso-periodo="${curso.periodoAcademico}">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:remove="all">
                                 <td class="fw-semibold">1º DAW</td>
-                                <td class="text-end">2</td>
-                            </tr>
-                            <!-- Ejemplo fila 2 (eliminar al poner th:each) -->
-                            <tr>
-                                <td class="fw-semibold">2º DAW</td>
-                                <td class="text-end">1</td>
-                            </tr>
-                            <!-- Ejemplo fila 3 (eliminar al poner th:each) -->
-                            <tr>
-                                <td class="fw-semibold">1º DAM</td>
-                                <td class="text-end">1</td>
+                                <td><span class="font-mono" style="font-size: 13px;">2026/2027</span></td>
+                                <td><span class="badge-status badge-status--active">Activo</span></td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex align-items-center gap-2">
+                                        <button type="button"
+                                                class="btn--row-icon"
+                                                title="Editar curso"
+                                                aria-label="Editar curso"
+                                                data-modal-open="modal-editar-curso"
+                                                data-curso-id="1"
+                                                data-curso-nombre="1º DAW"
+                                                data-curso-periodo="2026/2027">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
                 </section>
 
-                <!-- =========================================================================
-                     MODAL: NUEVO CURSO
-                     BACKEND (AdminController.java & Curso.java):
-                     - Añadir th:action="@{/admin/cursos}" (ajustar al @PostMapping correspondiente).
-                     - Verificar que name="nombre" coincide con el atributo de Curso.java o DTO.
-                     ========================================================================= -->
                 <div class="modal-overlay d-none" id="modal-nuevo-curso" role="dialog" aria-modal="true" aria-labelledby="modal-curso-title">
                     <div class="modal-card">
                         <div class="modal-card__header">
@@ -208,13 +239,25 @@
                         </div>
 
                         <form action="#" th:action="@{/admin/cursos}" method="post">
-                            <div class="mb-4">
+                            <div class="mb-3">
                                 <label for="nombre-curso" class="login-label">Nombre del curso</label>
                                 <input type="text"
                                        id="nombre-curso"
                                        name="nombre"
                                        class="pill-input pill-input--plain"
-                                       placeholder="Ej. 2º DAM"
+                                       placeholder="Ej. 1º DAW"
+                                       required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="periodo-curso" class="login-label">Periodo Académico</label>
+                                <input type="text"
+                                       id="periodo-curso"
+                                       name="periodoAcademico"
+                                       class="pill-input pill-input--plain font-mono"
+                                       placeholder="2026/2027"
+                                       pattern="^\d{4}/\d{4}$"
+                                       title="Formato requerido: YYYY/YYYY (ej. 2026/2027)"
                                        required>
                             </div>
 
@@ -229,6 +272,85 @@
                         </form>
                     </div>
                 </div>
+
+                <div class="modal-overlay d-none" id="modal-editar-curso" role="dialog" aria-modal="true" aria-labelledby="modal-editar-curso-title">
+                    <div class="modal-card">
+                        <div class="modal-card__header">
+                            <h2 id="modal-editar-curso-title" class="modal-card__title">Editar Curso</h2>
+                            <button type="button" class="icon-btn" data-modal-close aria-label="Cerrar modal">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+
+                        <form action="#" th:action="@{/admin/cursos/editar}" method="post">
+                            <input type="hidden" id="edit-curso-id" name="id">
+
+                            <div class="mb-3">
+                                <label for="edit-curso-nombre" class="login-label">Nombre del curso</label>
+                                <input type="text"
+                                       id="edit-curso-nombre"
+                                       name="nombre"
+                                       class="pill-input pill-input--plain"
+                                       placeholder="Ej. 1º DAW"
+                                       required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="edit-curso-periodo" class="login-label">Periodo Académico</label>
+                                <input type="text"
+                                       id="edit-curso-periodo"
+                                       name="periodoAcademico"
+                                       class="pill-input pill-input--plain font-mono"
+                                       placeholder="2026/2027"
+                                       pattern="^\d{4}/\d{4}$"
+                                       title="Formato requerido: YYYY/YYYY (ej. 2026/2027)"
+                                       required>
+                            </div>
+
+                            <div class="modal-card__footer">
+                                <button type="button" class="btn--ghost" data-modal-close>
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="btn--primary">
+                                    Guardar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const input = document.getElementById('filtro-curso-input');
+                        if (input) {
+                            input.addEventListener('input', function () {
+                                const query = this.value.toLowerCase().trim();
+                                const rows = document.querySelectorAll('.curso-row');
+                                rows.forEach(function (row) {
+                                    const nombre = (row.getAttribute('data-nombre') || '').toLowerCase();
+                                    const periodo = (row.getAttribute('data-periodo') || '').toLowerCase();
+                                    if (nombre.includes(query) || periodo.includes(query)) {
+                                        row.classList.remove('d-none');
+                                    } else {
+                                        row.classList.add('d-none');
+                                    }
+                                });
+                            });
+                        }
+
+                        document.querySelectorAll('[data-modal-open="modal-editar-curso"]').forEach(function (btn) {
+                            btn.addEventListener('click', function () {
+                                const idInput = document.getElementById('edit-curso-id');
+                                const nombreInput = document.getElementById('edit-curso-nombre');
+                                const periodoInput = document.getElementById('edit-curso-periodo');
+
+                                if (idInput) idInput.value = btn.getAttribute('data-curso-id') || '';
+                                if (nombreInput) nombreInput.value = btn.getAttribute('data-curso-nombre') || '';
+                                if (periodoInput) periodoInput.value = btn.getAttribute('data-curso-periodo') || '';
+                            });
+                        });
+                    });
+                </script>
 
             </div>
 

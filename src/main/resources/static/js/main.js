@@ -274,7 +274,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    /* 8. PRECARGA DE DATOS EN MODAL EDITAR RETO */
+    /* 8. PRECARGA DE DATOS EN MODALES DE EDICIÓN */
+    document.querySelectorAll('[data-modal-open="modal-editar-curso"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idInput = document.getElementById('edit-curso-id');
+            const nombreInput = document.getElementById('edit-curso-nombre');
+            const periodoInput = document.getElementById('edit-curso-periodo');
+
+            if (idInput) idInput.value = btn.getAttribute('data-curso-id') || '';
+            if (nombreInput) nombreInput.value = btn.getAttribute('data-curso-nombre') || '';
+            if (periodoInput) periodoInput.value = btn.getAttribute('data-curso-periodo') || '';
+        });
+    });
+
     document.querySelectorAll('[data-modal-open="modal-editar-reto"]').forEach(btn => {
         btn.addEventListener('click', () => {
             const idInput = document.getElementById('edit-reto-id');

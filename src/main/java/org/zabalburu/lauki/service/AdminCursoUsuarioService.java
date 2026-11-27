@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.zabalburu.lauki.domain.Curso;
 import org.zabalburu.lauki.domain.Usuario;
 import org.zabalburu.lauki.dto.request.CrearUsuarioRequest;
+import org.zabalburu.lauki.exception.FormatoPeriodoInvalidoException;
 import org.zabalburu.lauki.exception.RecursoDuplicadoException;
 import org.zabalburu.lauki.exception.RecursoNoEncontradoException;
 import org.zabalburu.lauki.mapper.UsuarioMapper;
@@ -47,17 +48,34 @@ public class AdminCursoUsuarioService {
 	}
 	
 	@Transactional
-	public Curso crearCurso(String nombre) {
-		if(cursoRepository.existsByNombre(nombre)) {
-			throw new RecursoDuplicadoException(Curso.class, "nombre", nombre);
+	public Curso crearCurso(String nombre, String periodoAcademico) {
+		String nombreLimpio = nombre != null ? nombre.trim() : "";
+		String periodoLimpio = periodoAcademico != null ? periodoAcademico.trim() : "";
+
+		if (!periodoLimpio.matches("^\\d{4}/\\d{4}$")) {
+			throw new FormatoPeriodoInvalidoException(periodoAcademico);
 		}
+
+		if (cursoRepository.existsByNombreAndPeriodoAcademico(nombreLimpio, periodoLimpio)) {
+			throw new RecursoDuplicadoException(Curso.class, "nombre y periodo", nombreLimpio + " (" + periodoLimpio + ")");
+		}
+
 		Curso nuevoCurso = new Curso();
-		nuevoCurso.setNombre(nombre.trim());
+		nuevoCurso.setNombre(nombreLimpio);
+		nuevoCurso.setPeriodoAcademico(periodoLimpio);
 		nuevoCurso.setActivo(true);
-		
-		Curso cursoGuardado = cursoRepository.save(nuevoCurso);
-		
-		return cursoGuardado;
+
+		return cursoRepository.save(nuevoCurso);
+	}
+
+	@Transactional
+	public Curso crearCurso(String nombre) {
+		return crearCurso(nombre, null);
+	}
+
+	@Transactional(readOnly = true)
+	public List<String> listarPeriodosAcademicos() {
+		return cursoRepository.findDistinctPeriodosAcademicos();
 	}
 	
 	@Transactional(readOnly = true)

@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.zabalburu.lauki.domain.Curso;
+import org.zabalburu.lauki.domain.MiembroGrupo;
 import org.zabalburu.lauki.domain.enums.EstadoTarea;
 import org.zabalburu.lauki.domain.enums.TipoEventoLog;
 import org.zabalburu.lauki.dto.request.BloqueoTareaRequest;
@@ -67,7 +69,13 @@ public class TableroController {
         String correo = authentication.getName();
         Integer idGrupo;
         try {
-            idGrupo = equipoFaseService.obtenerGrupoActivo(correo).getGrupo().getId();
+            MiembroGrupo miembroActivo = equipoFaseService.obtenerGrupoActivo(correo);
+            idGrupo = miembroActivo.getGrupo().getId();
+            if (miembroActivo.getUsuario() != null && miembroActivo.getUsuario().getCurso() != null) {
+                Curso c = miembroActivo.getUsuario().getCurso();
+                String infoCurso = c.getNombre() + (c.getPeriodoAcademico() != null ? " · " + c.getPeriodoAcademico() : "");
+                model.addAttribute("cursoEstudiante", infoCurso);
+            }
         } catch (RecursoNoEncontradoException exception) {
             model.addAttribute("fases", List.of());
             model.addAttribute("miembrosEquipo", List.of());

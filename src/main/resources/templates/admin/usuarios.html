@@ -272,9 +272,12 @@
                                          th:value="${curso.id}" th:text="${curso.nombre}" -->
                                     <select id="alumno-curso" name="cursoId" class="d-none" required>
                                         <option value="" selected disabled>Selecciona un curso</option>
-                                        <option value="1">1º DAW</option>
-                                        <option value="2">2º DAW</option>
-                                        <option value="3">1º DAM</option>
+                                        <option th:each="curso : ${cursos}"
+                                                th:value="${curso.id}"
+                                                th:text="${curso.nombre + (curso.periodoAcademico != null ? ' · ' + curso.periodoAcademico : '')}">1º DAW · 2026/2027</option>
+                                        <option th:remove="all" value="1">1º DAW</option>
+                                        <option th:remove="all" value="2">2º DAW</option>
+                                        <option th:remove="all" value="3">1º DAM</option>
                                     </select>
 
                                     <button type="button" class="lauki-select__trigger" aria-haspopup="listbox" aria-expanded="false">

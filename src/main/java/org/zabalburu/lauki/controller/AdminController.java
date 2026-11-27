@@ -42,12 +42,13 @@ public class AdminController {
 	public String listarCursos(Model model) {
 	    model.addAttribute("seccionActiva", "cursos");
 	    model.addAttribute("cursos", adminCursoUsuarioService.listarTodosLosCursos());
+	    model.addAttribute("periodos", adminCursoUsuarioService.listarPeriodosAcademicos());
 	    return "admin/cursos";
 	}
 
 	@PostMapping("/admin/cursos")
-	public String crearCurso(@RequestParam String nombre) {
-	    adminCursoUsuarioService.crearCurso(nombre);
+	public String crearCurso(@RequestParam String nombre, @RequestParam String periodoAcademico) {
+	    adminCursoUsuarioService.crearCurso(nombre, periodoAcademico);
 	    return "redirect:/admin/cursos";
 	}
 	
