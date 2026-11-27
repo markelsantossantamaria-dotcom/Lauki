@@ -89,6 +89,17 @@ public class GrupoFaseController {
         return "redirect:/grupo/fases";
     }
 
+    @PostMapping({"/grupo/fases/editar", "/estudiante/fases/editar"})
+    public String editarFase(Authentication authentication,
+                             @RequestParam Integer id,
+                             @RequestParam String nombre,
+                             @RequestParam Integer orden,
+                             RedirectAttributes redirectAttributes) {
+        equipoFaseService.editarFase(obtenerCorreo(authentication), id, nombre, orden);
+        redirectAttributes.addFlashAttribute("mensaje", "Fase actualizada correctamente");
+        return "redirect:/grupo/fases";
+    }
+
     @GetMapping({"/grupo/historial", "/estudiante/historial", "/tablero/historial", "/historial"})
     public String historial(Authentication authentication, Model model) {
         List<RetoHistorialDTO> retos = equipoFaseService.listarHistorial(obtenerCorreo(authentication)).stream()
