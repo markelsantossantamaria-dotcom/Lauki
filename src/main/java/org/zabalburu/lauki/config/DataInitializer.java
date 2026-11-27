@@ -32,5 +32,18 @@ public class DataInitializer implements CommandLineRunner {
 
             usuarioRepository.save(admin);
         }
+
+        String correoEstudiante = "estudiante@zabalburu.org";
+
+        if (!usuarioRepository.existsByCorreo(correoEstudiante)) {
+            Usuario estudiante = new Usuario();
+            estudiante.setNombre("Estudiante");
+            estudiante.setCorreo(correoEstudiante);
+            estudiante.setContrasena(passwordEncoder.encode("estudiante123"));
+            estudiante.setRolSistema(RolSistema.ESTUDIANTE);
+            estudiante.setActivo(true);
+
+            usuarioRepository.save(estudiante);
+        }
     }
 }
