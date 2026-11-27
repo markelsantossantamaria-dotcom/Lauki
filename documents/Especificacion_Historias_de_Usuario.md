@@ -3,7 +3,7 @@
 > **Proyecto:** Reto 03 — Mapeando el Caos (**Lauki**)  
 > **Centro:** Zabalburu Ikastetxea — 2º DAW (Metodología ETHAZI)  
 > **Estándar:** Metodologías Ágiles / Product Backlog con Criterios de Aceptación BDD (*Behavior-Driven Development*)  
-> **Tecnologías:** Spring Boot 3 + Spring Data JPA + Thymeleaf + Bootstrap 5 + JS Vanilla
+> **Tecnologías:** Spring Boot 3 + Spring Data JPA + Thymeleaf (Layout Dialect) + Bootstrap 5 + JS Vanilla
 
 ---
 
@@ -30,12 +30,12 @@
 ## Bloque 1: Seguridad y Acceso Unificado
 
 ### `[US-01]` — Autenticación Unificada y Redirección por Rol
-- **Enunciado:** Como usuario (Administrador precargado o Estudiante matriculado), quiero iniciar sesión en `/login` con mi correo y contraseña, para acceder de forma segura a mi espacio de trabajo.
+- **Enunciado:** Como usuario (Administrador precargado o Estudiante matriculado), quiero iniciar sesión en `/login` (`templates/login.html`) con mi correo y contraseña, para acceder de forma segura a mi espacio de trabajo.
 - **Criterios de Aceptación (BDD):**
   - **Escenario 1: Login de Administrador y redirección al panel de gestión**
     - **Dado que** `DataInitializer.java` ha asegurado la existencia de mi cuenta `ADMINISTRADOR` en la tabla `USUARIO` con `activo = true`.
     - **Cuando** introduzco mi correo y contraseña en `/login` y pulso "Iniciar sesión".
-    - **Entonces** el sistema valida mis credenciales y me redirige automáticamente al panel de administración (`/admin/cursos-usuarios`).
+    - **Entonces** el sistema valida mis credenciales y me redirige automáticamente al panel de administración (`/admin` o `/admin/cursos`).
   - **Escenario 2: Login de Estudiante y redirección a su tablero**
     - **Dado que** el Administrador ha registrado mi usuario `ESTUDIANTE` en la base de datos con `activo = true`.
     - **Cuando** inicio sesión en `/login`.
@@ -58,11 +58,11 @@
 ## Bloque 2: Administración Multi-Curso y Carga de Datos
 
 ### `[US-03]` — Alta de Cursos Académicos y Carga de Usuarios en Base de Datos
-- **Enunciado:** Como Administrador autenticado, quiero dar de alta cursos escolares (ej. *"2º DAW 2026/27"*) y registrar en la base de datos a los estudiantes de cada promoción, para que la aplicación sea reutilizable año tras año.
+- **Enunciado:** Como Administrador autenticado, quiero dar de alta cursos escolares en `/admin/cursos` (`templates/admin/cursos.html`) y registrar estudiantes en `/admin/usuarios` (`templates/admin/usuarios.html`), para que la aplicación sea reutilizable año tras año.
 - **Criterios de Aceptación (BDD):**
   - **Escenario 1: Creación de curso y alta de estudiante con contraseña BCrypt**
     - **Dado que** he iniciado sesión como `ADMINISTRADOR`.
-    - **Cuando** registro un nuevo `CURSO` y doy de alta a un alumno en `USUARIO` asignándole dicho curso y su contraseña inicial.
+    - **Cuando** registro un nuevo `CURSO` en `/admin/cursos` y doy de alta a un alumno en `/admin/usuarios` asignándole dicho curso y su contraseña inicial.
     - **Entonces** el servicio cifra la contraseña con `BCryptPasswordEncoder`, guarda al estudiante con `activo = true` y este ya puede iniciar sesión en `/login`.
   - **Escenario 2: Prevención de duplicados**
     - **Dado que** intento crear un curso o un correo de usuario ya existente.
@@ -70,7 +70,7 @@
     - **Entonces** el sistema impide el duplicado y muestra un mensaje informativo en pantalla.
 
 ### `[US-04]` — Creación de Retos y Grupos/Tableros con Fases Iniciales
-- **Enunciado:** Como Administrador, quiero crear los retos de un curso y conformar los grupos de alumnos, para que cada equipo disponga inmediatamente de su tablero Kanban listo para trabajar.
+- **Enunciado:** Como Administrador, quiero crear los retos de un curso en `/admin/retos` (`templates/admin/retos.html`) y conformar los grupos de alumnos en `/admin/grupos` (`templates/admin/grupos.html`), para que cada equipo disponga inmediatamente de su tablero Kanban listo para trabajar.
 - **Criterios de Aceptación (BDD):**
   - **Escenario 1: Creación de grupo de reto con 3 fases automáticas**
     - **Dado que** existe un `RETO` en estado `ACTIVO` para un curso.
@@ -78,7 +78,7 @@
     - **Entonces** el sistema guarda el grupo, genera automáticamente 3 fases iniciales en `FASE` (*1. Análisis y Diseño*, *2. Desarrollo*, *3. Pruebas y Despliegue*) y vincula a los estudiantes con rol inicial `COLABORADOR`.
 
 ### `[US-05]` — Archivo de Cursos y Desactivación de Usuarios (`activo = false`)
-- **Enunciado:** Como Administrador, quiero poder desactivar promociones finalizadas o alumnos que causen baja (`activo = false`), para mantener despejada la interfaz sin comprometer la persistencia histórica.
+- **Enunciado:** Como Administrador, quiero poder desactivar cursos o alumnos (`activo = false`) desde sus respectivas vistas de gestión, para mantener despejada la interfaz sin comprometer la persistencia histórica.
 - **Criterios de Aceptación (BDD):**
   - **Escenario 1: Desactivación limpia y preservación histórica**
     - **Dado que** selecciono un curso o un alumno.
@@ -162,11 +162,11 @@
     - **Entonces** se anota un evento `COMENTARIO` en `LOG_TAREA` accesible en la cronología de la tarea.
 
 ### `[US-12]` — Cierre Académico de Reto
-- **Enunciado:** Como Administrador, quiero transicionar un reto a `FINALIZADO`, para congelar los tableros y habilitar la rotación de equipos para el siguiente ciclo.
+- **Enunciado:** Como Administrador, quiero transicionar un reto a `FINALIZADO` desde `/admin/retos` (`templates/admin/retos.html`), para congelar los tableros y habilitar la rotación de equipos para el siguiente ciclo.
 - **Criterios de Aceptación (BDD):**
   - **Escenario 1: Finalización e inmutabilidad histórica**
     - **Dado que** un reto se encuentra en estado `ACTIVO`.
-    - **Cuando** el Administrador pulsa "Finalizar Reto".
+    - **Cuando** el Administrador pulsa "Finalizar Reto" en `/admin/retos`.
     - **Entonces** el reto pasa a `FINALIZADO`, inmovilizando todos los grupos asociados en modo solo lectura para histórico y permitiendo crear el siguiente reto.
 
 ### `[US-13]` — Consulta de Proyectos Finalizados en Modo Solo Lectura

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<!-- =========================================================================
+     ARCHIVO: src/main/resources/templates/admin/usuarios.html
+     ROL: ADMINISTRADOR
+     VISTA: Gestión de Usuarios (Listado de Alumnos y Modal de Creación)
+     CONTROLADOR: AdminController.java -> @GetMapping("/admin/usuarios") devuelve "admin/usuarios"
+     ========================================================================= -->
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      data-theme="light"
+      data-accent="magenta"
+      data-sidebar="expanded">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - Lauki</title>
+
+    <!-- =========================================================================
+         SOLO PARA VISTA PREVIA EN VS CODE (Live Server):
+         th:remove="all" hace que Spring Boot borre estas líneas al unir con layout.html.
+         ========================================================================= -->
+    <script th:remove="all">
+        (function () {
+            const theme = localStorage.getItem('lauki-theme') || 'light';
+            const accent = localStorage.getItem('lauki-accent') || 'magenta';
+            const sidebar = localStorage.getItem('lauki-sidebar') || 'expanded';
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('data-accent', accent);
+            document.documentElement.setAttribute('data-sidebar', sidebar);
+        })();
+    </script>
+    <link th:remove="all" rel="preconnect" href="https://fonts.googleapis.com">
+    <link th:remove="all" rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link th:remove="all" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <link th:remove="all" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link th:remove="all" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link th:remove="all" rel="stylesheet" href="../../static/css/styles.css">
+</head>
+<body>
+
+    <!-- Contenedor de vista previa (th:remove="tag" lo elimina en Spring Boot dejando solo el fragmento) -->
+    <div class="admin" th:remove="tag">
+
+        <!-- TOPBAR MÓVIL PARA VISTA PREVIA EN VS CODE (Descartado por Thymeleaf) -->
+        <header class="topbar" th:remove="all">
+            <button id="mobile-menu-toggle" class="icon-btn" type="button" aria-label="Abrir menú">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+            <span class="font-display fw-bold fs-4" style="letter-spacing: -0.04em;">
+                Lauki<span style="color: var(--color-accent);">.</span>
+            </span>
+            <div style="width: 32px;"></div>
+        </header>
+
+        <div id="sidebar-backdrop" class="sidebar-backdrop d-none" th:remove="all"></div>
+
+        <!-- SIDEBAR ADMINISTRADOR PARA VISTA PREVIA EN VS CODE (Descartado por Thymeleaf) -->
+        <aside class="sidebar d-flex flex-column justify-content-between p-3" th:remove="all">
+            <div>
+                <div class="sidebar__header d-flex align-items-center gap-2 px-2 py-3 mb-3">
+                    <button class="icon-btn sidebar__toggle" type="button" data-sidebar-toggle aria-label="Colapsar menú">
+                        <i class="bi bi-list fs-5"></i>
+                    </button>
+                    <span class="sidebar__brand font-display fw-bold" style="font-size: 28px; letter-spacing: -0.04em; line-height: 1;">
+                        Lauki<span style="color: var(--color-accent);">.</span>
+                    </span>
+                </div>
+
+                <nav class="d-flex flex-column gap-1" aria-label="Navegación de administrador">
+                    <a href="./panel.html" class="sidebar__link" title="Inicio">
+                        <i class="bi bi-house"></i>
+                        <span>Inicio</span>
+                    </a>
+                    <a href="./cursos.html" class="sidebar__link" title="Cursos">
+                        <i class="bi bi-book"></i>
+                        <span>Cursos</span>
+                    </a>
+                    <a href="./usuarios.html" class="sidebar__link sidebar__link--active" title="Usuarios" aria-current="page">
+                        <i class="bi bi-people"></i>
+                        <span>Usuarios</span>
+                    </a>
+                    <a href="./grupos.html" class="sidebar__link" title="Grupos">
+                        <i class="bi bi-grid"></i>
+                        <span>Grupos</span>
+                    </a>
+                    <a href="./retos.html" class="sidebar__link" title="Retos">
+                        <i class="bi bi-flag"></i>
+                        <span>Retos</span>
+                    </a>
+                </nav>
+            </div>
+
+            <div class="sidebar__footer d-flex align-items-center justify-content-between pt-3 px-2" style="border-top: 1px solid var(--color-border-subtle);">
+                <button id="theme-toggle" class="theme-circle-btn" type="button" aria-label="Cambiar tema">
+                    <i class="bi bi-moon"></i>
+                </button>
+                <div class="accent-group" role="group" aria-label="Color de acento">
+                    <button class="accent-swatch accent-swatch--magenta active" type="button" data-accent-option="magenta" aria-label="Acento magenta">
+                        <i class="bi bi-check"></i>
+                    </button>
+                    <button class="accent-swatch accent-swatch--cyan" type="button" data-accent-option="cyan" aria-label="Acento cian">
+                        <i class="bi bi-check"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="admin__main" th:remove="tag">
+
+            <!-- MENÚ DE USUARIO SUPERIOR PARA VISTA PREVIA EN VS CODE (Descartado por Thymeleaf) -->
+            <div class="d-flex justify-content-end mb-3" th:remove="all">
+                <div class="dropdown">
+                    <button class="user-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="avatar">MR</span>
+                        <span style="font-size: 13px; font-weight: 500;">Marta Ruiz</span>
+                        <i class="bi bi-chevron-down" style="font-size: 11px; color: var(--color-text-secondary);"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="background-color: var(--color-bg-surface); border-color: var(--color-border-subtle); border-radius: 10px; min-width: 200px;">
+                        <li class="px-3 py-2">
+                            <div style="font-size: 13px; font-weight: 600; color: var(--color-text-primary);">Marta Ruiz</div>
+                            <div style="font-size: 12px; color: var(--color-text-secondary);">marta.ruiz@lauki.edu</div>
+                        </li>
+                        <li><hr class="dropdown-divider" style="border-color: var(--color-border-subtle);"></li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2" href="../login.html" style="font-size: 13px; color: var(--color-error);">
+                                <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- =========================================================================
+                 BLOQUE REAL QUE SPRING BOOT INYECTA EN layout.html
+                 ========================================================================= -->
+            <div layout:fragment="content">
+
+                <!-- Cabecera con título a la izquierda y botón + Nuevo Alumno a la derecha -->
+                <header class="page-header d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+                    <div>
+                        <p class="font-mono text-uppercase m-0" style="color: var(--color-text-secondary); font-size: 12px; letter-spacing: 0.05em;">
+                            Administración
+                        </p>
+                        <h1 class="font-display fw-bold mt-1 mb-0" style="font-size: 32px;">
+                            Gestión de Usuarios
+                        </h1>
+                    </div>
+
+                    <button type="button" class="btn--primary" data-modal-open="modal-nuevo-alumno">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Nuevo Alumno</span>
+                    </button>
+                </header>
+
+                <!-- =========================================================================
+                     BACKEND (AdminController.java & Usuario.java): TABLA DE ALUMNOS
+                     - Iterar en el tbody con th:each="alumno : ${usuarios}" (o ${alumnos}).
+                     - Nombre: th:text="${alumno.nombre}"
+                     - Correo: th:text="${alumno.email}"
+                     - Curso: th:text="${alumno.curso != null ? alumno.curso.nombre : 'Sin curso'}"
+                     - Etiqueta INACTIVO: mostrar con th:if="${!alumno.activo}"
+                     ========================================================================= -->
+                <section class="table-card" aria-label="Listado de usuarios">
+                    <table class="lauki-table">
+                        <thead>
+                            <tr>
+                                <th>Alumno</th>
+                                <th>Correo</th>
+                                <th>Curso</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Ejemplo fila 1 (BACKEND: reemplazar filas de ejemplo por th:each="alumno : ${alumnos}") -->
+                            <tr>
+                                <td class="fw-semibold">Marta Ruiz</td>
+                                <td class="font-mono" style="color: var(--color-text-secondary); font-size: 13px;">marta@correo.com</td>
+                                <td>1º DAW</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">Pablo Gómez</td>
+                                <td class="font-mono" style="color: var(--color-text-secondary); font-size: 13px;">pablo@correo.com</td>
+                                <td>1º DAW</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">Lucía Torres</td>
+                                <td class="font-mono" style="color: var(--color-text-secondary); font-size: 13px;">lucia@correo.com</td>
+                                <td>2º DAW</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">Diego Marín</td>
+                                <td class="font-mono" style="color: var(--color-text-secondary); font-size: 13px;">diego@correo.com</td>
+                                <td>1º DAM</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">Sara Núñez</td>
+                                <td class="font-mono" style="color: var(--color-text-secondary); font-size: 13px;">sara@correo.com</td>
+                                <td>
+                                    <span>1º ASIR</span>
+                                    <span class="badge-inactive">Inactivo</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- =========================================================================
+                     MODAL: NUEVO ALUMNO
+                     BACKEND (AdminController.java & CrearUsuarioRequest.java):
+                     - Añadir th:action="@{/admin/usuarios}" (ajustar al @PostMapping correspondiente).
+                     - Los atributos name="nombre", name="email", name="password" y name="cursoId"
+                       están alineados con CrearUsuarioRequest.java.
+                     ========================================================================= -->
+                <div class="modal-overlay d-none" id="modal-nuevo-alumno" role="dialog" aria-modal="true" aria-labelledby="modal-alumno-title">
+                    <div class="modal-card">
+                        <div class="modal-card__header">
+                            <h2 id="modal-alumno-title" class="modal-card__title">Nuevo Alumno</h2>
+                            <button type="button" class="icon-btn" data-modal-close aria-label="Cerrar modal">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+
+                        <form action="#" th:action="@{/admin/usuarios}" method="post">
+
+                            <!-- Campo 1: Nombre -->
+                            <div class="mb-3">
+                                <label for="alumno-nombre" class="login-label">Nombre</label>
+                                <div class="pill-input-wrapper">
+                                    <i class="bi bi-person pill-icon-left"></i>
+                                    <input type="text"
+                                           id="alumno-nombre"
+                                           name="nombre"
+                                           class="pill-input"
+                                           required>
+                                </div>
+                            </div>
+
+                            <!-- Campo 2: Correo -->
+                            <div class="mb-3">
+                                <label for="alumno-email" class="login-label">Correo</label>
+                                <div class="pill-input-wrapper">
+                                    <i class="bi bi-envelope pill-icon-left"></i>
+                                    <input type="email"
+                                           id="alumno-email"
+                                           name="email"
+                                           class="pill-input"
+                                           placeholder="alumno@correo.com"
+                                           required>
+                                </div>
+                            </div>
+
+                            <!-- Campo 3: Contraseña -->
+                            <div class="mb-3">
+                                <label for="alumno-password" class="login-label">Contraseña</label>
+                                <div class="pill-input-wrapper">
+                                    <i class="bi bi-lock pill-icon-left"></i>
+                                    <input type="password"
+                                           id="alumno-password"
+                                           name="password"
+                                           class="pill-input"
+                                           required>
+                                </div>
+                            </div>
+
+                            <!-- Campo 4: Curso (Select nativo sincronizado con desplegable visual Figma) -->
+                            <div class="mb-4">
+                                <label for="alumno-curso" class="login-label">Curso</label>
+                                <div class="lauki-select" data-custom-select>
+                                    <!-- BACKEND (Curso.java): Poblar opciones con th:each="curso : ${cursos}"
+                                         th:value="${curso.id}" th:text="${curso.nombre}" -->
+                                    <select id="alumno-curso" name="cursoId" class="d-none" required>
+                                        <option value="" selected disabled>Selecciona un curso</option>
+                                        <option th:each="curso : ${cursos}"
+                                                th:value="${curso.id}"
+                                                th:text="${curso.nombre + (curso.periodoAcademico != null ? ' · ' + curso.periodoAcademico : '')}">1º DAW · 2026/2027</option>
+                                        <option th:remove="all" value="1">1º DAW</option>
+                                        <option th:remove="all" value="2">2º DAW</option>
+                                        <option th:remove="all" value="3">1º DAM</option>
+                                    </select>
+
+                                    <button type="button" class="lauki-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="lauki-select__value is-placeholder">Selecciona un curso</span>
+                                        <i class="bi bi-chevron-down lauki-select__arrow"></i>
+                                    </button>
+
+                                    <ul class="lauki-select__menu d-none" role="listbox"></ul>
+                                </div>
+                            </div>
+
+                            <div class="modal-card__footer">
+                                <button type="button" class="btn--ghost" data-modal-close>
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="btn--primary">
+                                    Guardar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Scripts (Solo vista previa VS Code) -->
+    <script th:remove="all" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:remove="all" src="../../static/js/main.js"></script>
+</body>
+</html>

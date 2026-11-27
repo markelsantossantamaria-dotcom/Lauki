@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- BACKEND: Cada vista hija definirá su propio title y Thymeleaf Layout Dialect lo combinará aquí -->
+    <title data-layout-title-pattern="$CONTENT_TITLE · Lauki">Lauki</title>
+
+    <script>
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('lauki-theme') || 'light');
+        document.documentElement.setAttribute('data-accent', localStorage.getItem('lauki-accent') || 'magenta');
+        document.documentElement.setAttribute('data-sidebar', localStorage.getItem('lauki-sidebar') || 'expanded');
+    </script>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <link rel="stylesheet" th:href="@{/css/styles.css}" href="../static/css/styles.css">
+</head>
+
+<body>
+
+    <!-- SPLASH SCREEN (Se muestra una vez por sesión mediante sessionStorage en main.js) -->
+    <div id="lauki-splash"
+        style="position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s ease; background: var(--color-bg-base);">
+        <h1 id="splash-logo" class="font-display"
+            style="font-size: 70px; font-weight: 700; letter-spacing: -0.04em; margin:0; transition: transform 1.2s ease; transform: scale(0.94);">
+            Lauki<span id="splash-dot"
+                style="opacity: 0; color: var(--color-accent); transition: opacity 0.5s ease; font-size: 0.6em; vertical-align: 0.1em;">▮</span>
+        </h1>
+        <p class="font-mono" style="font-size: 14px; color: var(--color-text-secondary); margin-top: 16px;">Organiza ·
+            Colabora · Entrega</p>
+        <div
+            style="width: 150px; height: 2px; background: var(--color-border-subtle); margin-top: 32px; border-radius: 2px; overflow: hidden;">
+            <div id="splash-progress"
+                style="height: 100%; width: 0%; background: var(--color-accent); transition: width 2.5s cubic-bezier(0.2, 0.8, 0.2, 1);">
+            </div>
+        </div>
+    </div>
+
+    <!-- LAYOUT GLOBAL -->
+    <div class="admin">
+
+        <!-- TOPBAR MÓVIL -->
+        <header class="topbar">
+            <button type="button" class="btn p-0 text-reset" id="mobile-menu-toggle" aria-label="Abrir menú">
+                <i class="bi bi-list fs-3"></i>
+            </button>
+            <h2 class="m-0 font-display fs-5 fw-bold">
+                Lauki<span style="color: var(--color-accent); font-size: 0.6em; vertical-align: 0.1em;">▮</span>
+            </h2>
+            <div class="dropdown">
+                <button class="user-menu-btn p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 32px; height: 32px; justify-content: center;">
+                    <span style="font-size: 12px; font-weight:bold;" sec:authorize="isAuthenticated()" th:text="${#strings.substring(#authentication.name, 0, 2).toUpperCase()}">MR</span>
+                    <span style="font-size: 12px; font-weight:bold;" sec:authorize="!isAuthenticated()">MR</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow"
+                    style="background-color: var(--color-bg-surface); border-color: var(--color-border-subtle);">
+                    <li>
+                        <form th:action="@{/logout}" method="post" class="m-0">
+                            <button type="submit" class="dropdown-item text-danger d-flex align-items-center">
+                                <i class="bi bi-box-arrow-right me-2"></i> Cerrar sesión
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </header>
+
+        <div class="sidebar-backdrop d-none" id="sidebar-backdrop"></div>
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar d-flex flex-column">
+
+            <!-- Cabecera: Hamburguesa y Logo -->
+            <div class="sidebar__header p-4 d-flex align-items-center gap-3">
+                <button type="button" class="btn p-0 text-reset sidebar__toggle" data-sidebar-toggle
+                    aria-label="Colapsar menú">
+                    <i class="bi bi-list fs-3"></i>
+                </button>
+                <h2 class="sidebar__brand m-0 font-display fw-bold" style="font-size: 28px;">
+                    Lauki<span style="color: var(--color-accent); font-size: 0.6em; vertical-align: 0.1em;">▮</span>
+                </h2>
+            </div>
+
+            <!-- =========================================================================
+                 BACKEND: MENÚ DE NAVEGACIÓN SEGÚN ROL (Usuario.java)
+                 - En AdminController.java, pasad model.addAttribute("seccionActiva", "cursos")
+                   (o "inicio", "usuarios", "grupos", "retos") para iluminar la pestaña activa.
+                 - th:href funciona en Spring Boot y href="./admin/..." funciona en VS Code.
+                 ========================================================================= -->
+            <nav class="flex-grow-1 px-3 mt-2" aria-label="Menú principal">
+
+                <!-- BLOQUE 1: ADMINISTRADOR (Rutas de AdminController.java) -->
+                <div id="menu-admin" sec:authorize="hasRole('ADMINISTRADOR')">
+
+                    <!-- 1. INICIO -> Lleva a admin/panel.html -->
+                    <a th:href="@{/admin}" href="./admin/panel.html" title="Inicio" class="sidebar__link mb-1"
+                        th:classappend="${seccionActiva == 'inicio' or seccionActiva == null} ? 'sidebar__link--active' : ''">
+                        <i class="bi bi-house"></i> <span>Inicio</span>
+                    </a>
+
+                    <!-- 2. CURSOS -> Lleva a admin/cursos.html -->
+                    <a th:href="@{/admin/cursos}" href="./admin/cursos.html" title="Cursos" class="sidebar__link mb-1"
+                        th:classappend="${seccionActiva == 'cursos'} ? 'sidebar__link--active' : ''">
+                        <i class="bi bi-book"></i> <span>Cursos</span>
+                    </a>
+
+                    <!-- 3. USUARIOS -> Lleva a admin/usuarios.html -->
+                    <a th:href="@{/admin/usuarios}" href="./admin/usuarios.html" title="Usuarios"
+                        class="sidebar__link mb-1"
+                        th:classappend="${seccionActiva == 'usuarios'} ? 'sidebar__link--active' : ''">
+                        <i class="bi bi-people"></i> <span>Usuarios</span>
+                    </a>
+
+                    <!-- 4. GRUPOS -> Lleva a admin/grupos.html -->
+                    <a th:href="@{/admin/grupos}" href="./admin/grupos.html" title="Grupos"
+                        class="sidebar__link mb-1"
+                        th:classappend="${seccionActiva == 'grupos'} ? 'sidebar__link--active' : ''">
+                        <i class="bi bi-grid"></i> <span>Grupos</span>
+                    </a>
+
+                    <!-- 5. RETOS -> Lleva a admin/retos.html -->
+                    <a th:href="@{/admin/retos}" href="./admin/retos.html" title="Retos"
+                        class="sidebar__link mb-1"
+                        th:classappend="${seccionActiva == 'retos'} ? 'sidebar__link--active' : ''">
+                        <i class="bi bi-flag"></i> <span>Retos</span>
+                    </a>
+					
+                </div>
+
+                <!--/* BLOQUE 2: ESTUDIANTE (Rutas de TableroController.java) - Descomentar y condicionar con th:if cuando el rol sea ESTUDIANTE*/-->
+                <div id="menu-estudiante" sec:authorize="hasRole('ESTUDIANTE')">
+
+                    <a th:href="@{/tablero}" href="#" title="Mi Tablero" class="sidebar__link mb-1">
+
+                        <i class="bi bi-kanban"></i> <span>Mi Tablero</span>
+                    </a>
+                    <a th:href="@{/equipo}" href="#" title="Mi Equipo" class="sidebar__link mb-1">
+                        <i class="bi bi-people"></i> <span>Mi Equipo</span>
+                    </a>
+                    <a th:href="@{/fases}" href="#" title="Fases del Reto" class="sidebar__link mb-1">
+                        <i class="bi bi-layers"></i> <span>Fases del Reto</span>
+                    </a>
+                    <a th:href="@{/historial}" href="#" title="Historial" class="sidebar__link mb-1">
+                        <i class="bi bi-clock-history"></i> <span>Historial</span>
+                    </a>
+                </div>
+                
+
+            </nav>
+
+            <!-- Footer de la Sidebar: Controles de Acento y Tema -->
+            <div class="sidebar__footer p-4 border-top d-flex justify-content-between align-items-center"
+                style="border-color: var(--color-border-subtle) !important;">
+                <div class="accent-group" role="group" aria-label="Selector de color de acento">
+                    <button type="button" class="accent-swatch accent-swatch--magenta active"
+                        data-accent-option="magenta" aria-label="Acento Magenta">
+                        <i class="bi bi-check2"></i>
+                    </button>
+                    <button type="button" class="accent-swatch accent-swatch--cyan" data-accent-option="cyan"
+                        aria-label="Acento Cian">
+                        <i class="bi bi-check2"></i>
+                    </button>
+                </div>
+
+                <button type="button" class="theme-circle-btn shadow-sm" id="theme-toggle" aria-label="Cambiar tema">
+                    <i class="bi bi-moon"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO MAIN -->
+        <main class="admin__main">
+
+            <div class="d-none d-md-flex justify-content-end mb-3 dropdown">
+                <button class="user-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="avatar" sec:authorize="isAuthenticated()" th:text="${#strings.substring(#authentication.name, 0, 2).toUpperCase()}">MR</div>
+                    <div class="avatar" sec:authorize="!isAuthenticated()">MR</div>
+                    <span style="font-size: 14px; font-weight: 500;" sec:authorize="isAuthenticated()" th:text="${#authentication.name}">Marta Ruiz</span>
+                    <span style="font-size: 14px; font-weight: 500;" sec:authorize="!isAuthenticated()">Marta Ruiz</span>
+                    <i class="bi bi-chevron-down" style="font-size: 12px; color: var(--color-text-secondary);"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow"
+                    style="background-color: var(--color-bg-surface); border-color: var(--color-border-subtle);">
+                    <li>
+                        <form th:action="@{/logout}" method="post" class="m-0">
+                            <button type="submit" class="dropdown-item text-danger d-flex align-items-center">
+                                <i class="bi bi-box-arrow-right me-2"></i> Cerrar sesión
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- ZONA DE INYECCIÓN DE VISTAS HIJAS (Thymeleaf Layout Dialect): No modificar este div -->
+            <div data-layout-fragment="content"></div>
+
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/main.js}" src="../static/js/main.js"></script>
+</body>
+
+</html>

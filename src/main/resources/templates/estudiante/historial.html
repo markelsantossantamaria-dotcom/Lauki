@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      data-theme="light"
+      data-accent="magenta"
+      data-sidebar="expanded">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial - Lauki</title>
+
+    <!-- Script anti-parpadeo (FOUC) para vista previa en VS Code Live Server (descartado por Thymeleaf) -->
+    <script th:remove="all">
+        (function () {
+            const theme = localStorage.getItem('lauki-theme') || 'light';
+            const accent = localStorage.getItem('lauki-accent') || 'magenta';
+            const sidebar = localStorage.getItem('lauki-sidebar') || 'expanded';
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('data-accent', accent);
+            document.documentElement.setAttribute('data-sidebar', sidebar);
+        })();
+    </script>
+
+    <!-- Dependencias para vista previa directa en VS Code (descartadas en Spring Boot) -->
+    <link th:remove="all" rel="preconnect" href="https://fonts.googleapis.com">
+    <link th:remove="all" rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link th:remove="all" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <link th:remove="all" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link th:remove="all" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link th:remove="all" rel="stylesheet" href="../../static/css/styles.css">
+</head>
+<body>
+
+<div class="admin" th:remove="tag">
+
+    <!-- TOPBAR MÓVIL PARA VISTA PREVIA EN VS CODE (Descartado por Thymeleaf) -->
+    <header class="topbar" th:remove="all">
+        <button id="mobile-menu-toggle" class="icon-btn" type="button" aria-label="Abrir menú">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+        <span class="font-display fw-bold fs-4">Lauki<span style="color: var(--color-accent);">.</span></span>
+        <div style="width: 32px;"></div>
+    </header>
+
+    <div id="sidebar-backdrop" class="sidebar-backdrop d-none" th:remove="all"></div>
+
+    <!-- SIDEBAR ESTUDIANTE PARA VISTA PREVIA EN VS CODE (Descartado por Thymeleaf) -->
+    <aside class="sidebar d-flex flex-column justify-content-between p-3" th:remove="all">
+        <div>
+            <div class="sidebar__header d-flex align-items-center gap-2 px-2 py-3 mb-3">
+                <button class="icon-btn sidebar__toggle" type="button" data-sidebar-toggle aria-label="Colapsar menú">
+                    <i class="bi bi-list fs-5"></i>
+                </button>
+                <span class="sidebar__brand font-display fw-bold" style="font-size: 28px; letter-spacing: -0.04em; line-height: 1;">
+                    Lauki<span style="color: var(--color-accent);">.</span>
+                </span>
+            </div>
+
+            <nav class="d-flex flex-column gap-1" aria-label="Navegación de estudiante">
+                <a href="./tablero.html" class="sidebar__link" title="Mi Tablero">
+                    <i class="bi bi-kanban"></i>
+                    <span>Mi Tablero</span>
+                </a>
+                <a href="./equipo.html" class="sidebar__link" title="Mi Equipo">
+                    <i class="bi bi-people"></i>
+                    <span>Mi Equipo</span>
+                </a>
+                <a href="./fases.html" class="sidebar__link" title="Fases del Reto">
+                    <i class="bi bi-diagram-3"></i>
+                    <span>Fases del Reto</span>
+                </a>
+                <a href="./historial.html" class="sidebar__link sidebar__link--active" title="Historial" aria-current="page">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Historial</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar__footer d-flex align-items-center justify-content-between pt-3 px-2" style="border-top: 1px solid var(--color-border-subtle);">
+            <button id="theme-toggle" class="theme-circle-btn" type="button" aria-label="Cambiar tema">
+                <i class="bi bi-moon"></i>
+            </button>
+            <div class="accent-group" role="group" aria-label="Color de acento">
+                <button class="accent-swatch accent-swatch--magenta active" type="button" data-accent-option="magenta" aria-label="Acento magenta">
+                    <i class="bi bi-check"></i>
+                </button>
+                <button class="accent-swatch accent-swatch--cyan" type="button" data-accent-option="cyan" aria-label="Acento cian">
+                    <i class="bi bi-check"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="admin__main" th:remove="tag">
+
+        <!-- MENÚ DE USUARIO SUPERIOR PARA VISTA PREVIA EN VS CODE (Descartado por Thymeleaf) -->
+        <div class="d-flex justify-content-end mb-3" th:remove="all">
+            <div class="dropdown">
+                <button class="user-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="avatar">MR</span>
+                    <span style="font-size: 13px; font-weight: 500;">Marta Ruiz</span>
+                    <i class="bi bi-chevron-down" style="font-size: 11px; color: var(--color-text-secondary);"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="background-color: var(--color-bg-surface); border-color: var(--color-border-subtle); border-radius: 10px; min-width: 200px;">
+                    <li class="px-3 py-2">
+                        <div style="font-size: 13px; font-weight: 600; color: var(--color-text-primary);">Marta Ruiz</div>
+                        <div style="font-size: 12px; color: var(--color-text-secondary);">marta.ruiz@lauki.edu</div>
+                    </li>
+                    <li><hr class="dropdown-divider" style="border-color: var(--color-border-subtle);"></li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2" href="../login.html" style="font-size: 13px; color: var(--color-error);">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- =====================================================================
+             FRAGMENTO THYMELEAF REAL INYECTADO EN layout.html
+             ===================================================================== -->
+        <div layout:fragment="content">
+
+            <!-- CABECERA DE PÁGINA -->
+            <header class="mb-4">
+                <p class="font-mono text-uppercase mb-1" style="font-size: 11px; letter-spacing: 0.08em; color: var(--color-text-secondary);">
+                    ESTUDIANTE
+                </p>
+                <h1 class="font-display fw-bold mb-2" style="font-size: 32px; letter-spacing: -0.02em; color: var(--color-text-primary);">
+                    Historial
+                </h1>
+                <p class="m-0" style="font-size: 13.5px; color: var(--color-text-secondary);">
+                    Retos pasados de tu equipo.
+                </p>
+            </header>
+
+            <!-- =================================================================
+                 CUADRÍCULA DE RETOS FINALIZADOS (CLICABLES -> MODO SOLO LECTURA)
+                 BACKEND (HistorialController.java):
+                 - Model attribute 'retosFinalizados' (List<RetoHistorialDTO> con:
+                   id, codigo [ej: 'RETO 01'], nombre, fechaCierre [ej: '2024-06-14'])
+                 - Ruta detalle lectura: @GetMapping("/estudiante/historial/{id}")
+                 ================================================================= -->
+            <section class="history-grid" aria-label="Retos finalizados del equipo">
+
+                <!-- BACKEND: Iteración real sobre retos pasados -->
+                <a class="history-card"
+                   th:each="reto, iterStat : ${retosFinalizados}"
+                   href="./historial-detalle.html"
+                   th:href="@{/estudiante/historial/{id}(id=${reto.id})}">
+                    <div>
+                        <p class="history-card__code"
+                           th:text="${reto.codigo != null ? reto.codigo : ('RETO ' + (iterStat.count < 10 ? '0' + iterStat.count : iterStat.count))}">
+                            RETO 01
+                        </p>
+                        <h2 class="history-card__title" th:text="${reto.nombre}">Desarrollo Web</h2>
+                    </div>
+
+                    <div class="history-card__footer">
+                        <span class="badge-status badge-status--finished">FINALIZADO</span>
+                        <span class="history-card__date"
+                              th:text="${'Cierre · ' + reto.fechaCierre}">Cierre · 2024-06-14</span>
+                    </div>
+                </a>
+
+                <!-- DATO DE MUESTRA PARA VISTA PREVIA EN VS CODE (Descartado por Thymeleaf) -->
+                <a class="history-card" href="./historial-detalle.html" th:remove="all">
+                    <div>
+                        <p class="history-card__code">RETO 02</p>
+                        <h2 class="history-card__title">Bases de Datos</h2>
+                    </div>
+
+                    <div class="history-card__footer">
+                        <span class="badge-status badge-status--finished">FINALIZADO</span>
+                        <span class="history-card__date">Cierre · 2024-03-02</span>
+                    </div>
+                </a>
+
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<!-- Scripts para vista previa directa en VS Code (descartados en Spring Boot) -->
+<script th:remove="all" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:remove="all" src="../../static/js/main.js"></script>
+</body>
+</html>

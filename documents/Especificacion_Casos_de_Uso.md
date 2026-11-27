@@ -3,7 +3,7 @@
 > **Proyecto:** Reto 03 — Mapeando el Caos (**Lauki**)  
 > **Centro:** Zabalburu Ikastetxea — 2º DAW (Metodología ETHAZI)  
 > **Estándar:** IEEE 830 / Especificación de Casos de Uso  
-> **Tecnologías:** Spring Boot 3 (Spring MVC) + Spring Data JPA (Hibernate 6) + Thymeleaf + Bootstrap 5 + JS Vanilla
+> **Tecnologías:** Spring Boot 3 (Spring MVC) + Spring Data JPA (Hibernate 6) + Thymeleaf (Layout Dialect) + Bootstrap 5 + JS Vanilla
 
 ---
 
@@ -25,10 +25,10 @@
 ## CU-01: Autenticación Unificada y Redirección por Rol
 
 ### Descripción
-Permite tanto a los Administradores (precargados inicialmente por `DataInitializer.java`) como a los Estudiantes (dados de alta en la base de datos por el Administrador) iniciar sesión en la misma pantalla (`/login`) y ser redirigidos automáticamente a su espacio de trabajo según su rol.
+Permite tanto a los Administradores (precargados inicialmente por `DataInitializer.java`) como a los Estudiantes (dados de alta en la base de datos por el Administrador) iniciar sesión en la misma pantalla (`/login`, plantilla `templates/login.html`) y ser redirigidos automáticamente a su espacio de trabajo según su rol.
 
 ### Actores
-- **Administrador (Equipo Docente):** Accede al panel de administración global para cargar cursos, usuarios, grupos y retos.
+- **Administrador (Equipo Docente):** Accede al panel de administración modular (`/admin`) para gestionar cursos, usuarios, grupos y retos.
 - **Estudiante:** Accede al tablero Kanban activo de su equipo y a su historial de retos.
 
 ### Precondiciones
@@ -39,10 +39,10 @@ Permite tanto a los Administradores (precargados inicialmente por `DataInitializ
 ### Flujo Principal
 1. El usuario introduce su `correo` y su `contrasena` en `/login`.
 2. El usuario envía el formulario pulsando "Iniciar sesión".
-3. Spring Security invoca a `CustomUserDetailsService`, busca el registro en `USUARIO` mediante `findByCorreo(correo)`, verifica que `activo == true` y valida el hash BCrypt de la contraseña.
+3. Spring Security invoca a `UsuarioAuthenticationService`, busca el registro en `USUARIO` mediante `findByCorreoIgnoreCase(correo)`, verifica que `activo == true` y valida el hash BCrypt de la contraseña.
 4. El sistema identifica el `rol_sistema` (`ADMINISTRADOR` o `ESTUDIANTE`) y establece el contexto de seguridad.
 5. El manejador de autenticación redirige según el rol:
-   - Si es **`ADMINISTRADOR`** $\rightarrow$ Redirige al Panel de Administración (`/admin/cursos-usuarios`).
+   - Si es **`ADMINISTRADOR`** $\rightarrow$ Redirige al Panel de Administración (`/admin` o `/admin/cursos`).
    - Si es **`ESTUDIANTE`** $\rightarrow$ Redirige al Tablero Kanban de su reto activo (`/tablero`).
 
 ### Flujos Alternativos
@@ -56,7 +56,7 @@ Permite tanto a los Administradores (precargados inicialmente por `DataInitializ
 ## CU-02: Gestión Académica Multi-Curso (Cursos, Usuarios, Retos y Grupos)
 
 ### Descripción
-El Administrador prepara el entorno para las promociones escolares: da de alta cursos académicos, registra usuarios en base de datos, define retos y conforma los grupos de trabajo (cada grupo actúa como el Tablero Kanban del equipo y recibe automáticamente 3 fases iniciales).
+El Administrador prepara el entorno para las promociones escolares a través de vistas modulares (`layout.html`): da de alta cursos académicos, registra usuarios en base de datos, define retos y conforma los grupos de trabajo (cada grupo actúa como el Tablero Kanban del equipo y recibe automáticamente 3 fases iniciales).
 
 ### Actores
 - **Administrador:** Docente autenticado con `rol_sistema = 'ADMINISTRADOR'`.
@@ -65,12 +65,12 @@ El Administrador prepara el entorno para las promociones escolares: da de alta c
 1. El Administrador ha iniciado sesión en `/login` con su cuenta precargada por `DataInitializer`.
 
 ### Flujo Principal
-1. **Alta de Curso:** El Administrador accede a **Cursos y Usuarios** (`/admin/cursos-usuarios`) y crea un nuevo `CURSO` indicando su `nombre` único (ej. *"2º DAW 2026/27"*), con `activo = true`.
-2. **Carga de Usuarios en Base de Datos:** En la misma pantalla, registra a los estudiantes en la tabla `USUARIO` indicando `nombre`, `correo`, `contrasena` (cifrada con BCrypt por el servicio), `rol_sistema = 'ESTUDIANTE'`, `id_curso` y `activo = true`.
-3. **Creación de Reto:** El Administrador accede a **Retos y Grupos** (`/admin/grupos-retos`) y crea un nuevo `RETO` vinculado al `id_curso` con `nombre`, `descripcion` y `estado_reto = 'ACTIVO'`.
-4. **Creación de Grupos/Tableros del Reto:** Crea un `GRUPO` vinculado al `id_reto`:
+1. **Alta y Gestión de Cursos:** El Administrador accede a **Cursos** (`/admin/cursos`, plantilla `templates/admin/cursos.html`) y crea un nuevo `CURSO` indicando su `nombre` único (ej. *"2º DAW 2026/27"*), con `activo = true`.
+2. **Carga y Gestión de Usuarios:** El Administrador accede a **Usuarios** (`/admin/usuarios`, plantilla `templates/admin/usuarios.html`) y registra a los estudiantes en la tabla `USUARIO` indicando `nombre`, `correo`, `contrasena` (cifrada con BCrypt por el servicio), `rol_sistema = 'ESTUDIANTE'`, `id_curso` y `activo = true`.
+3. **Creación y Cierre de Retos:** El Administrador accede a **Retos** (`/admin/retos`, plantilla `templates/admin/retos.html`) y crea un nuevo `RETO` vinculado al `id_curso` con `nombre`, `descripcion` y `estado_reto = 'ACTIVO'`.
+4. **Creación y Gestión de Grupos:** El Administrador accede a **Grupos** (`/admin/grupos`, plantilla `templates/admin/grupos.html`) y crea un `GRUPO` vinculado al `id_reto`:
    - El servicio persiste el `GRUPO` y **genera automáticamente 3 fases iniciales en `FASE`** (*1. Análisis y Diseño*, *2. Desarrollo*, *3. Pruebas y Despliegue*).
-5. **Asignación de Miembros al Grupo:** Selecciona los estudiantes del curso y los registra en `MIEMBRO_GRUPO` con rol inicial `COLABORADOR`.
+5. **Asignación de Miembros al Grupo:** En la vista de grupos, selecciona los estudiantes del curso y los vincula como integrantes del equipo.
 
 ### Flujos Alternativos
 - **1a / 2a. Duplicidad de Curso o Correo:** Si el nombre del curso o el correo ya existen, el sistema notifica el conflicto sin interrumpir la ejecución.
@@ -174,6 +174,6 @@ Permite al alumnado consultar tableros de retos anteriores evaluados, preservand
 Permite al Administrador dar por concluido un reto (`ACTIVO` $\rightarrow$ `FINALIZADO`), congelando de forma instantánea todos los tableros de ese reto para su posterior consulta histórica.
 
 ### Flujo Principal
-1. El Administrador pulsa "Finalizar Reto" en el panel de control.
+1. El Administrador pulsa "Finalizar Reto" en la vista de Retos (`/admin/retos`, plantilla `templates/admin/retos.html`).
 2. El servicio actualiza `reto.estadoReto = FINALIZADO`.
 3. Todos los grupos y miembros asociados quedan automáticamente disponibles para el historial en solo lectura, permitiendo conformar nuevos equipos para el siguiente reto.
